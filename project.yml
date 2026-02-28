@@ -19,6 +19,9 @@ targets:
     sources:
       - path: Sources/App
       - path: Sources/Features
+    resources:
+      - path: Sources/App/Resources
+        buildPhase: resources
     settings:
       base:
         INFOPLIST_FILE: Sources/App/Info.plist

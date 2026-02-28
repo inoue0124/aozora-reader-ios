@@ -76,6 +76,44 @@ actor CatalogService {
         guard let catalog else { throw CatalogError.catalogNotLoaded }
         return catalog.books.filter { $0.personId == personId }
     }
+
+    func booksByWorkType(_ workType: WorkType, limit: Int = 20) async throws -> [Book] {
+        try await loadCatalog()
+        guard let catalog else { throw CatalogError.catalogNotLoaded }
+        return Array(
+            catalog.books
+                .filter { WorkType.from(classification: $0.classification) == workType }
+                .prefix(limit)
+        )
+    }
+
+    func newestBooks(limit: Int = 20) async throws -> [Book] {
+        try await loadCatalog()
+        guard let catalog else { throw CatalogError.catalogNotLoaded }
+        return Array(
+            catalog.books
+                .sorted { $0.releaseDate > $1.releaseDate }
+                .prefix(limit)
+        )
+    }
+
+    func topAuthorsByWorkCount(limit: Int = 10) async throws -> [(person: Person, workCount: Int)] {
+        try await loadCatalog()
+        guard let catalog else { throw CatalogError.catalogNotLoaded }
+
+        var countByPerson: [Int: Int] = [:]
+        for book in catalog.books {
+            countByPerson[book.personId, default: 0] += 1
+        }
+
+        return countByPerson
+            .sorted { $0.value > $1.value }
+            .prefix(limit)
+            .compactMap { personId, count in
+                guard let person = personIndex[personId] else { return nil }
+                return (person: person, workCount: count)
+            }
+    }
 }
 
 enum CatalogError: LocalizedError {

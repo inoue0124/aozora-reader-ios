@@ -14,6 +14,6 @@ final class FavoriteBook {
         self.title = title
         self.authorName = authorName
         self.personId = personId
-        self.addedAt = .now
+        addedAt = .now
     }
 }

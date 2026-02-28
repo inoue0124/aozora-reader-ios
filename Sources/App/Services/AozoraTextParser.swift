@@ -13,15 +13,17 @@ struct AozoraTextParser: Sendable {
     }
 
     private func extractBody(from html: String) -> String {
-        if let mainStart = html.range(of: "<div class=\"main_text\">"),
-           let mainEnd = html.range(of: "<div class=\"bibliographical_information\">")
+        if
+            let mainStart = html.range(of: "<div class=\"main_text\">"),
+            let mainEnd = html.range(of: "<div class=\"bibliographical_information\">")
         {
             return String(html[mainStart.upperBound ..< mainEnd.lowerBound])
         }
 
-        if let bodyStart = html.range(of: "<body"),
-           let bodyTagEnd = html[bodyStart.lowerBound...].range(of: ">"),
-           let bodyEnd = html.range(of: "</body>")
+        if
+            let bodyStart = html.range(of: "<body"),
+            let bodyTagEnd = html[bodyStart.lowerBound...].range(of: ">"),
+            let bodyEnd = html.range(of: "</body>")
         {
             return String(html[bodyTagEnd.upperBound ..< bodyEnd.lowerBound])
         }

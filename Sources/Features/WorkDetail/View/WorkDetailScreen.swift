@@ -56,7 +56,6 @@ struct WorkDetailScreen: View {
         review = try? modelContext.fetch(descriptor).first
     }
 
-    @ViewBuilder
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 16) {
@@ -90,7 +89,6 @@ struct WorkDetailScreen: View {
         }
     }
 
-    @ViewBuilder
     private var metadataSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !book.classification.isEmpty {
@@ -116,7 +114,6 @@ struct WorkDetailScreen: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    @ViewBuilder
     private var reviewSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -148,7 +145,6 @@ struct WorkDetailScreen: View {
         }
     }
 
-    @ViewBuilder
     private var actionSection: some View {
         NavigationLink {
             ReaderScreen(book: book)

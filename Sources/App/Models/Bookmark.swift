@@ -14,6 +14,6 @@ final class Bookmark {
         self.title = title
         self.authorName = authorName
         self.scrollOffset = scrollOffset
-        self.lastReadAt = .now
+        lastReadAt = .now
     }
 }

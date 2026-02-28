@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct ReaderScreen: View {
@@ -5,6 +6,7 @@ struct ReaderScreen: View {
     @State private var viewModel: ReaderViewModel
     @State private var settings = ReadingSettings.shared
     @State private var showSettings = false
+    @Environment(\.modelContext) private var modelContext
 
     init(book: Book) {
         self.book = book
@@ -26,13 +28,33 @@ struct ReaderScreen: View {
                     description: Text(error)
                 )
             } else if let content = viewModel.content {
-                ScrollView {
-                    Text(content)
-                        .font(settings.fontSize.font)
-                        .lineSpacing(settings.lineSpacing.value)
-                        .foregroundStyle(settings.theme.textColor)
-                        .textSelection(.enabled)
-                        .padding(settings.padding.value)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            Color.clear
+                                .frame(height: 0)
+                                .id("top")
+
+                            Text(content)
+                                .font(settings.fontSize.font)
+                                .lineSpacing(settings.lineSpacing.value)
+                                .foregroundStyle(settings.theme.textColor)
+                                .textSelection(.enabled)
+                                .padding(settings.padding.value)
+                        }
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(
+                                    key: ScrollOffsetKey.self,
+                                    value: -geo.frame(in: .named("scroll")).origin.y
+                                )
+                            }
+                        )
+                    }
+                    .coordinateSpace(name: "scroll")
+                    .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                        viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                    }
                 }
                 .background(settings.theme.backgroundColor)
             }
@@ -51,6 +73,16 @@ struct ReaderScreen: View {
         .sheet(isPresented: $showSettings) {
             ReadingSettingsSheet(settings: settings)
         }
-        .task { await viewModel.loadContent() }
+        .task {
+            viewModel.loadBookmark(context: modelContext)
+            await viewModel.loadContent()
+        }
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    static let defaultValue: Double = 0
+    static func reduce(value: inout Double, nextValue: () -> Double) {
+        value = nextValue()
     }
 }

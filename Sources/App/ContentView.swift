@@ -4,8 +4,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                Text("検索画面（実装予定）")
-                    .navigationTitle("作品検索")
+                SearchScreen()
             }
             .tabItem {
                 Label("検索", systemImage: "magnifyingglass")

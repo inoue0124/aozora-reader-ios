@@ -6,6 +6,15 @@ struct ReadingSettingsSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("表示モード") {
+                    Picker("表示", selection: $settings.layoutMode) {
+                        ForEach(ReadingLayoutMode.allCases, id: \.self) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 Section("フォントサイズ") {
                     Picker("サイズ", selection: $settings.fontSize) {
                         ForEach(FontSizeLevel.allCases, id: \.self) { level in

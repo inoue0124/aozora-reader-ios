@@ -6,6 +6,8 @@ struct WorkDetailScreen: View {
     @State private var viewModel: WorkDetailViewModel
     @State private var favoritesVM = FavoritesViewModel()
     @State private var isFavorite = false
+    @State private var showReview = false
+    @State private var review: BookReview?
     @Environment(\.modelContext) private var modelContext
 
     init(book: Book) {
@@ -18,6 +20,7 @@ struct WorkDetailScreen: View {
             VStack(alignment: .leading, spacing: 20) {
                 headerSection
                 metadataSection
+                reviewSection
                 actionSection
             }
             .padding()
@@ -35,10 +38,22 @@ struct WorkDetailScreen: View {
                 }
             }
         }
+        .sheet(isPresented: $showReview, onDismiss: loadReview) {
+            ReviewSheet(book: book)
+        }
         .task {
             await viewModel.loadAuthor()
             isFavorite = favoritesVM.isFavorite(bookId: book.id, context: modelContext)
+            loadReview()
         }
+    }
+
+    private func loadReview() {
+        let bookId = book.id
+        let descriptor = FetchDescriptor<BookReview>(
+            predicate: #Predicate { $0.bookId == bookId }
+        )
+        review = try? modelContext.fetch(descriptor).first
     }
 
     @ViewBuilder
@@ -99,6 +114,38 @@ struct WorkDetailScreen: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var reviewSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("レビュー")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    showReview = true
+                } label: {
+                    Text(review == nil ? "レビューを書く" : "編集")
+                        .font(.subheadline)
+                }
+            }
+
+            if let review {
+                VStack(alignment: .leading, spacing: 4) {
+                    StarRatingView(rating: review.rating)
+                    if !review.comment.isEmpty {
+                        Text(review.comment)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(3)
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
+        }
     }
 
     @ViewBuilder

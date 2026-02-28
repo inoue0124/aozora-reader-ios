@@ -44,27 +44,33 @@ struct WorkDetailScreen: View {
     @ViewBuilder
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(book.title)
-                .font(.title)
-                .fontWeight(.bold)
+            HStack(alignment: .top, spacing: 16) {
+                BookCoverView(book: book, width: 100, height: 140)
 
-            if !book.subtitle.isEmpty {
-                Text(book.subtitle)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(book.title)
+                        .font(.title2)
+                        .fontWeight(.bold)
 
-            if let author = viewModel.author {
-                NavigationLink {
-                    AuthorDetailScreen(person: author)
-                } label: {
-                    Label(author.fullName, systemImage: "person")
-                        .font(.headline)
+                    if !book.subtitle.isEmpty {
+                        Text(book.subtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let author = viewModel.author {
+                        NavigationLink {
+                            AuthorDetailScreen(person: author)
+                        } label: {
+                            Label(author.fullName, systemImage: "person")
+                                .font(.subheadline)
+                        }
+                    } else {
+                        Label(book.authorName, systemImage: "person")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-            } else {
-                Label(book.authorName, systemImage: "person")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
             }
         }
     }

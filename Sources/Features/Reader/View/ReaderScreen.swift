@@ -6,6 +6,8 @@ struct ReaderScreen: View {
     @State private var viewModel: ReaderViewModel
     @State private var settings = ReadingSettings.shared
     @State private var showSettings = false
+    @State private var currentPage = 1
+    @State private var totalPages = 1
     @Environment(\.modelContext) private var modelContext
 
     init(book: Book) {
@@ -29,10 +31,22 @@ struct ReaderScreen: View {
                 )
             } else if let content = viewModel.content {
                 if settings.layoutMode == .verticalPaged {
-                    VerticalPagedReaderView(content: content, settings: settings) { offset in
-                        viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                    ZStack(alignment: .bottomTrailing) {
+                        VerticalPagedReaderView(content: content, settings: settings) { offset in
+                            viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                        } onPageChanged: { current, total in
+                            currentPage = current
+                            totalPages = total
+                        }
+                        .background(settings.theme.backgroundColor)
+
+                        Text("\(currentPage) / \(totalPages)")
+                            .font(.caption.monospacedDigit())
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .padding()
                     }
-                    .background(settings.theme.backgroundColor)
                 } else {
                     ScrollViewReader { _ in
                         ScrollView {

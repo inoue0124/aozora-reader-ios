@@ -50,6 +50,8 @@ struct SearchScreen: View {
             if viewModel.query.isEmpty {
                 viewModel.results = []
                 viewModel.hasSearched = false
+            } else if viewModel.query.count >= 2 {
+                Task { await viewModel.search() }
             }
         }
         .toolbar {

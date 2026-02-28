@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 @Observable
 @MainActor
@@ -7,6 +8,7 @@ final class ReaderViewModel {
     var content: AttributedString?
     var isLoading = false
     var errorMessage: String?
+    var savedScrollOffset: Double = 0
 
     private let textFetchService = TextFetchService.shared
     private let parser = AozoraTextParser()
@@ -27,5 +29,37 @@ final class ReaderViewModel {
         }
 
         isLoading = false
+    }
+
+    func loadBookmark(context: ModelContext) {
+        let bookId = book.id
+        let descriptor = FetchDescriptor<Bookmark>(
+            predicate: #Predicate { $0.bookId == bookId }
+        )
+        if let bookmark = try? context.fetch(descriptor).first {
+            savedScrollOffset = bookmark.scrollOffset
+        }
+    }
+
+    func saveBookmark(scrollOffset: Double, context: ModelContext) {
+        let bookId = book.id
+        let descriptor = FetchDescriptor<Bookmark>(
+            predicate: #Predicate { $0.bookId == bookId }
+        )
+
+        if let existing = try? context.fetch(descriptor).first {
+            existing.scrollOffset = scrollOffset
+            existing.lastReadAt = .now
+        } else {
+            let bookmark = Bookmark(
+                bookId: book.id,
+                title: book.title,
+                authorName: book.authorName,
+                scrollOffset: scrollOffset
+            )
+            context.insert(bookmark)
+        }
+
+        try? context.save()
     }
 }

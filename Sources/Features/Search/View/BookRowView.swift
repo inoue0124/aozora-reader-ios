@@ -5,7 +5,9 @@ struct BookRowView: View {
     var showCacheIcon = false
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
+            BookCoverView(book: book)
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(book.title)
                     .font(.headline)

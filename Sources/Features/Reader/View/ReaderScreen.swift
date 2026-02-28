@@ -102,6 +102,7 @@ struct ReaderScreen: View {
         }
         .task {
             viewModel.loadBookmark(context: modelContext)
+            ReadingHistoryService.shared.recordView(book: book, context: modelContext)
             await viewModel.loadContent()
         }
     }

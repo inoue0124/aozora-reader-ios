@@ -26,7 +26,10 @@ struct VerticalPagedReaderView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.onScroll = onScroll
         context.coordinator.onPageChanged = onPageChanged
+        webView.loadHTMLString(buildHTML(), baseURL: nil)
+    }
 
+    private func buildHTML() -> String {
         let plain = String(content.characters)
             .replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
@@ -34,53 +37,36 @@ struct VerticalPagedReaderView: UIViewRepresentable {
             .replacingOccurrences(of: "\"", with: "&quot;")
             .replacingOccurrences(of: "\n", with: "<br>")
 
-        let css = """
+        let pad = Int(settings.padding.value)
+        let lineHeight = Double(settings.fontSize.rawValue) + settings.lineSpacing.value
+
+        return """
+        <html>
+        <head>
+        <meta name='viewport' content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no'>
         <style>
         :root { color-scheme: light dark; }
         html, body {
-          margin: 0;
-          padding: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
+          margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
           background: \(settings.theme.hexBackground);
           color: \(settings.theme.hexText);
           font-family: -apple-system, 'Hiragino Mincho ProN', serif;
           -webkit-user-select: text;
         }
         #reader {
-          box-sizing: border-box;
-          width: 100vw;
-          height: 100vh;
-          padding: \(Int(settings.padding.value))px;
-          writing-mode: vertical-rl;
-          text-orientation: mixed;
-          font-size: \(settings.fontSize.rawValue)px;
-          line-height: \(Double(settings.fontSize.rawValue) + settings.lineSpacing.value)px;
-          overflow-x: auto;
-          overflow-y: hidden;
-          scroll-snap-type: x mandatory;
-          column-fill: auto;
-          column-width: calc(100vw - \(Int(settings.padding.value * 2))px);
-          column-gap: 0;
+          box-sizing: border-box; width: 100vw; height: 100vh; padding: \(pad)px;
+          writing-mode: vertical-rl; text-orientation: mixed;
+          font-size: \(settings.fontSize.rawValue)px; line-height: \(lineHeight)px;
+          overflow-x: auto; overflow-y: hidden;
+          scroll-snap-type: x mandatory; column-fill: auto;
+          column-width: calc(100vw - \(pad * 2)px); column-gap: 0;
           word-break: keep-all;
         }
         </style>
-        """
-
-        let html = """
-        <html>
-        <head>
-        <meta name='viewport' content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no'>
-        \(css)
         </head>
-        <body>
-          <div id='reader'>\(plain)</div>
-        </body>
+        <body><div id='reader'>\(plain)</div></body>
         </html>
         """
-
-        webView.loadHTMLString(html, baseURL: nil)
     }
 
     func makeCoordinator() -> Coordinator {
@@ -116,14 +102,15 @@ struct VerticalPagedReaderView: UIViewRepresentable {
             """
 
             webView.evaluateJavaScript(js) { [weak self] result, _ in
-                guard let self,
-                      let dict = result as? [String: Any],
-                      let width = dict["width"] as? Double,
-                      let viewport = dict["viewport"] as? Double
+                guard
+                    let self,
+                    let dict = result as? [String: Any],
+                    let width = dict["width"] as? Double,
+                    let viewport = dict["viewport"] as? Double
                 else { return }
 
                 let total = max(Int(ceil(width / max(viewport, 1))), 1)
-                self.onPageChanged(1, total)
+                onPageChanged(1, total)
             }
         }
     }

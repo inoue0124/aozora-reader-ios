@@ -23,7 +23,6 @@ struct AuthorDetailScreen: View {
         .task { await viewModel.load() }
     }
 
-    @ViewBuilder
     private var portraitSection: some View {
         HStack(spacing: 16) {
             if let url = viewModel.portraitURL {
@@ -82,7 +81,6 @@ struct AuthorDetailScreen: View {
         }
     }
 
-    @ViewBuilder
     private var worksSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("作品一覧（\(viewModel.works.count)件）")

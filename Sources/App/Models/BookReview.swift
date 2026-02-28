@@ -17,7 +17,7 @@ final class BookReview {
         self.authorName = authorName
         self.rating = rating
         self.comment = comment
-        self.createdAt = .now
-        self.updatedAt = .now
+        createdAt = .now
+        updatedAt = .now
     }
 }

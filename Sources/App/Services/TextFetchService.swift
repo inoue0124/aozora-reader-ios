@@ -33,8 +33,9 @@ actor TextFetchService {
 
         let (data, response) = try await session.data(from: url)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200
+        guard
+            let httpResponse = response as? HTTPURLResponse,
+            httpResponse.statusCode == 200
         else {
             throw TextFetchError.fetchFailed
         }
@@ -92,8 +93,9 @@ actor TextFetchService {
     }
 
     private func detectEncoding(from data: Data, response: HTTPURLResponse) -> String.Encoding {
-        if let contentType = response.value(forHTTPHeaderField: "Content-Type"),
-           contentType.contains("Shift_JIS") || contentType.contains("shift_jis")
+        if
+            let contentType = response.value(forHTTPHeaderField: "Content-Type"),
+            contentType.contains("Shift_JIS") || contentType.contains("shift_jis")
         {
             return .shiftJIS
         }

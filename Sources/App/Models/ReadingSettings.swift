@@ -131,7 +131,7 @@ final class ReadingSettings: @unchecked Sendable {
     private let themeKey = "readingTheme"
 
     private init() {
-        layoutMode = ReadingLayoutMode(rawValue: defaults.string(forKey: layoutModeKey) ?? "") ?? .horizontalScroll
+        layoutMode = ReadingLayoutMode(rawValue: defaults.string(forKey: layoutModeKey) ?? "") ?? .verticalPaged
         fontSize = FontSizeLevel(rawValue: defaults.integer(forKey: fontSizeKey)) ?? .medium
         lineSpacing = LineSpacingLevel(rawValue: defaults.integer(forKey: lineSpacingKey)) ?? .normal
         padding = PaddingLevel(rawValue: defaults.integer(forKey: paddingKey)) ?? .normal

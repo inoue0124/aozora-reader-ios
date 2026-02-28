@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 @main
@@ -6,5 +7,10 @@ struct MainApp: SwiftUI.App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: [
+            FavoriteBook.self,
+            Bookmark.self,
+            BookReview.self,
+        ])
     }
 }

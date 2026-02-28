@@ -5,7 +5,14 @@ struct SearchScreen: View {
 
     var body: some View {
         List {
-            if viewModel.isLoading {
+            if !viewModel.hasSearched {
+                ContentUnavailableView(
+                    "作品を検索しよう",
+                    systemImage: "book",
+                    description: Text("上の検索バーにタイトルや著者名を入れて検索してね")
+                )
+                .listRowSeparator(.hidden)
+            } else if viewModel.isLoading {
                 HStack {
                     Spacer()
                     ProgressView("検索中…")
@@ -33,6 +40,7 @@ struct SearchScreen: View {
         .listStyle(.plain)
         .searchable(
             text: $viewModel.query,
+            placement: .navigationBarDrawer(displayMode: .always),
             prompt: viewModel.searchMode == .title ? "タイトルで検索" : "著者名で検索"
         )
         .onSubmit(of: .search) {

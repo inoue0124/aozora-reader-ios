@@ -1,8 +1,12 @@
+import SwiftData
 import SwiftUI
 
 struct WorkDetailScreen: View {
     let book: Book
     @State private var viewModel: WorkDetailViewModel
+    @State private var favoritesVM = FavoritesViewModel()
+    @State private var isFavorite = false
+    @Environment(\.modelContext) private var modelContext
 
     init(book: Book) {
         self.book = book
@@ -20,7 +24,21 @@ struct WorkDetailScreen: View {
         }
         .navigationTitle("作品詳細")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.loadAuthor() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    favoritesVM.toggleFavorite(book: book, context: modelContext)
+                    isFavorite.toggle()
+                } label: {
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        .foregroundStyle(isFavorite ? .red : .secondary)
+                }
+            }
+        }
+        .task {
+            await viewModel.loadAuthor()
+            isFavorite = favoritesVM.isFavorite(bookId: book.id, context: modelContext)
+        }
     }
 
     @ViewBuilder

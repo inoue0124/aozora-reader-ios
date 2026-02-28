@@ -11,8 +11,7 @@ struct ContentView: View {
             }
 
             NavigationStack {
-                Text("お気に入り画面（実装予定）")
-                    .navigationTitle("お気に入り")
+                FavoritesScreen()
             }
             .tabItem {
                 Label("お気に入り", systemImage: "heart.fill")

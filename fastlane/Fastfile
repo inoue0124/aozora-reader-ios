@@ -1,0 +1,81 @@
+default_platform(:ios)
+
+platform :ios do
+  # ============================================================
+  # Build
+  # ============================================================
+  desc "Build the app"
+  lane :build do
+    xcodebuild(
+      scheme: ENV["SCHEME"] || "App",
+      configuration: "Debug",
+      build: true,
+      destination: "generic/platform=iOS Simulator",
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
+    )
+  end
+
+  # ============================================================
+  # Test
+  # ============================================================
+  desc "Run tests"
+  lane :test do
+    run_tests(
+      scheme: ENV["SCHEME"] || "App",
+      destination: "platform=iOS Simulator,name=iPhone 16",
+      clean: true,
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
+    )
+  end
+
+  # ============================================================
+  # Beta - Local (TestFlight)
+  # ============================================================
+  desc "Upload to TestFlight (local)"
+  lane :beta do
+    increment_build_number(xcodeproj: "App.xcodeproj")
+    build_app(
+      scheme: ENV["SCHEME"] || "App",
+      export_options: "ExportOptions.plist",
+      xcargs: "DEVELOPMENT_TEAM=#{ENV['TEAM_ID'] || 'YOUR_TEAM_ID'} -allowProvisioningUpdates"
+    )
+    upload_to_testflight(
+      apple_id: ENV["APPLE_ID"] || "your@email.com",
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  # ============================================================
+  # Beta - CI (TestFlight with ASC API Key)
+  # ============================================================
+  desc "Upload to TestFlight (CI with ASC API Key)"
+  lane :beta_ci do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_filepath: ENV["ASC_KEY_PATH"]
+    )
+    increment_build_number(xcodeproj: "App.xcodeproj")
+    build_app(
+      scheme: ENV["SCHEME"] || "App",
+      export_options: "ExportOptions.plist"
+    )
+    upload_to_testflight(api_key: api_key, skip_waiting_for_build_processing: true)
+  end
+
+  # ============================================================
+  # Release (App Store)
+  # ============================================================
+  desc "Submit to App Store"
+  lane :release do
+    build_app(
+      scheme: ENV["SCHEME"] || "App",
+      export_options: "ExportOptions.plist"
+    )
+    upload_to_app_store(
+      skip_screenshots: true,
+      skip_metadata: false,
+      force: true
+    )
+  end
+end

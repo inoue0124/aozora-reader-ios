@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euo pipefail
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(head -1 "$COMMIT_MSG_FILE")
+
+# Conventional Commits pattern
+# type(scope): subject
+# type: subject
+PATTERN='^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\(.+\))?: .+$'
+
+# Allow merge commits
+if echo "$COMMIT_MSG" | grep -qE '^Merge '; then
+    exit 0
+fi
+
+# Allow revert commits
+if echo "$COMMIT_MSG" | grep -qE '^Revert '; then
+    exit 0
+fi
+
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "commit-msg: コミットメッセージが Conventional Commits 形式に準拠していません。"
+    echo ""
+    echo "  形式: <type>(<scope>): <subject>"
+    echo ""
+    echo "  type: feat, fix, docs, style, refactor, test, chore, build, ci, perf, revert"
+    echo "  scope: 省略可"
+    echo "  subject: 変更内容の簡潔な説明"
+    echo ""
+    echo "  例: feat(auth): Add login screen"
+    echo "      fix: Resolve crash on launch"
+    echo "      chore(deps): Update SwiftLint to 0.57.1"
+    echo ""
+    exit 1
+fi

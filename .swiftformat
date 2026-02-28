@@ -1,0 +1,74 @@
+# SwiftFormat configuration
+# Consistent with .swiftlint.yml rules
+
+# Swift version
+--swiftversion 6.2
+
+# Indentation
+--indent 4
+--smarttabs disabled
+--indentcase false
+--ifdef indent
+--indentstrings false
+
+# Braces
+--allman false
+
+# Wrapping
+--wraparguments before-first
+--wrapcollections before-first
+--wrapparameters before-first
+--wrapconditions before-first
+--wrapreturntype preserve
+--wraptypealiases before-first
+--closingparen balanced
+--maxwidth 120
+
+# Spacing
+--operatorfunc spaced
+--nospaceoperators
+--ranges spaced
+--trimwhitespace always
+
+# Blank lines
+--emptybraces no-space
+
+# Semicolons
+--semicolons inline
+
+# Redundancy
+--self remove
+--selfrequired
+--importgrouping alpha
+
+# Trailing commas
+--commas always
+
+# Marks
+--markextensions always
+--marktypes always
+
+# Type attributes
+--typeattributes prev-line
+--funcattributes prev-line
+--varattributes preserve
+--storedvarattrs same-line
+--computedvarattrs preserve
+
+# Other
+--stripunusedargs closure-only
+--decimalgrouping 3,6
+--binarygrouping 4,8
+--octalgrouping 4,8
+--hexgrouping 4,8
+--hexliteralcase uppercase
+--exponentcase lowercase
+--patternlet hoist
+
+# Exclude paths (consistent with .swiftlint.yml)
+--exclude DerivedData,.build,Pods,Packages,.swiftpm
+
+# Disabled rules
+--disable trailingCommas
+--disable blankLinesAtEndOfScope
+--disable blankLinesAtStartOfScope

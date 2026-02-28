@@ -23,9 +23,17 @@ final class ReaderViewModel {
 
         do {
             let html = try await textFetchService.fetchText(for: book)
-            content = parser.parse(html: html)
+            let parsed = parser.parse(html: html)
+
+            if parsed.characters.isEmpty {
+                errorMessage = "本文を表示できませんでした（データが空です）"
+                content = nil
+            } else {
+                content = parsed
+            }
         } catch {
             errorMessage = error.localizedDescription
+            content = nil
         }
 
         isLoading = false

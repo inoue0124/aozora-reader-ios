@@ -28,7 +28,7 @@ struct ReaderScreen: View {
                     description: Text(error)
                 )
             } else if let content = viewModel.content {
-                ScrollViewReader { proxy in
+                ScrollViewReader { _ in
                     ScrollView {
                         VStack(spacing: 0) {
                             Color.clear
@@ -57,6 +57,12 @@ struct ReaderScreen: View {
                     }
                 }
                 .background(settings.theme.backgroundColor)
+            } else {
+                ContentUnavailableView(
+                    "本文が表示できません",
+                    systemImage: "doc.text.magnifyingglass",
+                    description: Text("別の作品で試してみて。改善するから、タイトルを教えてくれると助かる")
+                )
             }
         }
         .navigationTitle(book.title)

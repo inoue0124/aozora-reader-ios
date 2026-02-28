@@ -87,9 +87,25 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
     }
 }
 
+enum ReadingLayoutMode: String, CaseIterable, Sendable, Codable {
+    case horizontalScroll
+    case verticalPaged
+
+    var label: String {
+        switch self {
+        case .horizontalScroll: "横書きスクロール"
+        case .verticalPaged: "縦書きページ"
+        }
+    }
+}
+
 @Observable
 final class ReadingSettings: @unchecked Sendable {
     static let shared = ReadingSettings()
+
+    var layoutMode: ReadingLayoutMode {
+        didSet { save() }
+    }
 
     var fontSize: FontSizeLevel {
         didSet { save() }
@@ -108,12 +124,14 @@ final class ReadingSettings: @unchecked Sendable {
     }
 
     private let defaults = UserDefaults.standard
+    private let layoutModeKey = "readingLayoutMode"
     private let fontSizeKey = "readingFontSize"
     private let lineSpacingKey = "readingLineSpacing"
     private let paddingKey = "readingPadding"
     private let themeKey = "readingTheme"
 
     private init() {
+        layoutMode = ReadingLayoutMode(rawValue: defaults.string(forKey: layoutModeKey) ?? "") ?? .horizontalScroll
         fontSize = FontSizeLevel(rawValue: defaults.integer(forKey: fontSizeKey)) ?? .medium
         lineSpacing = LineSpacingLevel(rawValue: defaults.integer(forKey: lineSpacingKey)) ?? .normal
         padding = PaddingLevel(rawValue: defaults.integer(forKey: paddingKey)) ?? .normal
@@ -121,6 +139,7 @@ final class ReadingSettings: @unchecked Sendable {
     }
 
     private func save() {
+        defaults.set(layoutMode.rawValue, forKey: layoutModeKey)
         defaults.set(fontSize.rawValue, forKey: fontSizeKey)
         defaults.set(lineSpacing.rawValue, forKey: lineSpacingKey)
         defaults.set(padding.rawValue, forKey: paddingKey)

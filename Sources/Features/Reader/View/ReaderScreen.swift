@@ -28,35 +28,42 @@ struct ReaderScreen: View {
                     description: Text(error)
                 )
             } else if let content = viewModel.content {
-                ScrollViewReader { _ in
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            Color.clear
-                                .frame(height: 0)
-                                .id("top")
-
-                            Text(content)
-                                .font(settings.fontSize.font)
-                                .lineSpacing(settings.lineSpacing.value)
-                                .foregroundStyle(settings.theme.textColor)
-                                .textSelection(.enabled)
-                                .padding(settings.padding.value)
-                        }
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(
-                                    key: ScrollOffsetKey.self,
-                                    value: -geo.frame(in: .named("scroll")).origin.y
-                                )
-                            }
-                        )
-                    }
-                    .coordinateSpace(name: "scroll")
-                    .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                if settings.layoutMode == .verticalPaged {
+                    VerticalPagedReaderView(content: content, settings: settings) { offset in
                         viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
                     }
+                    .background(settings.theme.backgroundColor)
+                } else {
+                    ScrollViewReader { _ in
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                Color.clear
+                                    .frame(height: 0)
+                                    .id("top")
+
+                                Text(content)
+                                    .font(settings.fontSize.font)
+                                    .lineSpacing(settings.lineSpacing.value)
+                                    .foregroundStyle(settings.theme.textColor)
+                                    .textSelection(.enabled)
+                                    .padding(settings.padding.value)
+                            }
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear.preference(
+                                        key: ScrollOffsetKey.self,
+                                        value: -geo.frame(in: .named("scroll")).origin.y
+                                    )
+                                }
+                            )
+                        }
+                        .coordinateSpace(name: "scroll")
+                        .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                            viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                        }
+                    }
+                    .background(settings.theme.backgroundColor)
                 }
-                .background(settings.theme.backgroundColor)
             } else {
                 ContentUnavailableView(
                     "本文が表示できません",

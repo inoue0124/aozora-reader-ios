@@ -4,6 +4,13 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationStack {
+                HomeScreen()
+            }
+            .tabItem {
+                Label("ホーム", systemImage: "house.fill")
+            }
+
+            NavigationStack {
                 SearchScreen()
             }
             .tabItem {

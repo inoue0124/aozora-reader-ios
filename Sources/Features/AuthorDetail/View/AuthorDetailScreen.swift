@@ -93,7 +93,6 @@ struct AuthorDetailScreen: View {
 
     // MARK: - Biography
 
-    @ViewBuilder
     private var biographySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("来歴")
@@ -122,7 +121,6 @@ struct AuthorDetailScreen: View {
 
     // MARK: - Representative Works
 
-    @ViewBuilder
     private var representativeWorksSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("代表作")
@@ -173,7 +171,6 @@ struct AuthorDetailScreen: View {
 
     // MARK: - Timeline
 
-    @ViewBuilder
     private var timelineSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("年表")
@@ -246,7 +243,6 @@ struct AuthorDetailScreen: View {
 
     // MARK: - Sources
 
-    @ViewBuilder
     private var sourcesSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("出典")

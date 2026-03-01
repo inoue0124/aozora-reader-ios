@@ -8,6 +8,7 @@ struct WorkDetailScreen: View {
     @State private var isFavorite = false
     @State private var showReview = false
     @State private var review: BookReview?
+    @State private var isSummaryExpanded = false
     @Environment(\.modelContext) private var modelContext
 
     init(book: Book) {
@@ -46,6 +47,7 @@ struct WorkDetailScreen: View {
             await viewModel.loadAuthor()
             isFavorite = favoritesVM.isFavorite(bookId: book.id, context: modelContext)
             loadReview()
+            isSummaryExpanded = false
             await viewModel.loadSummary(context: modelContext)
         }
     }
@@ -104,6 +106,18 @@ struct WorkDetailScreen: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineSpacing(4)
+                    .lineLimit(isSummaryExpanded ? nil : 3)
+
+                if summary.count > 70 {
+                    Button {
+                        isSummaryExpanded.toggle()
+                    } label: {
+                        Text(isSummaryExpanded ? "閉じる" : "もっと見る")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .buttonStyle(.plain)
+                }
             } else {
                 Text("あらすじはありません")
                     .font(.subheadline)

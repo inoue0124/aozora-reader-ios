@@ -26,6 +26,7 @@ struct AuthorDetailScreen: View {
         }
         .navigationTitle("著者詳細")
         .navigationBarTitleDisplayMode(.inline)
+        .refreshable { await viewModel.load() }
         .task { await viewModel.load() }
     }
 

@@ -30,9 +30,9 @@ final class HomeViewModel {
         await loadAuthorPortraits()
     }
 
-    // MARK: - Private
+    // MARK: - Internal (testable)
 
-    private func loadContinueReading(context: ModelContext) -> [Bookmark] {
+    func loadContinueReading(context: ModelContext) -> [Bookmark] {
         var descriptor = FetchDescriptor<Bookmark>(
             sortBy: [SortDescriptor(\.lastReadAt, order: .reverse)]
         )
@@ -44,7 +44,7 @@ final class HomeViewModel {
         await RecommendationService.shared.recommendAuthors(context: context)
     }
 
-    private func loadRecentReviews(context: ModelContext) -> [BookReview] {
+    func loadRecentReviews(context: ModelContext) -> [BookReview] {
         var descriptor = FetchDescriptor<BookReview>(
             sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
         )

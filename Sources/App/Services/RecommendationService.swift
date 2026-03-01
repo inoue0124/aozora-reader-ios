@@ -48,7 +48,7 @@ final class RecommendationService {
 
     // MARK: - Scoring
 
-    private func accumulateHistoryScores(
+    func accumulateHistoryScores(
         _ histories: [ReadingHistory],
         topClassification: String,
         scores: inout [Int: Double],
@@ -88,7 +88,7 @@ final class RecommendationService {
         }
     }
 
-    private func applyRecencyDecay(scores: inout [Int: Double], latestInteraction: [Int: Date]) {
+    func applyRecencyDecay(scores: inout [Int: Double], latestInteraction: [Int: Date]) {
         let now = Date.now
         for (personId, lastDate) in latestInteraction {
             let days = now.timeIntervalSince(lastDate) / 86400
@@ -136,7 +136,7 @@ final class RecommendationService {
         return (try? context.fetch(descriptor)) ?? []
     }
 
-    private func mostViewedClassification(histories: [ReadingHistory]) -> String {
+    func mostViewedClassification(histories: [ReadingHistory]) -> String {
         var counts: [String: Int] = [:]
         for history in histories where !history.classification.isEmpty {
             counts[history.classification, default: 0] += history.viewCount

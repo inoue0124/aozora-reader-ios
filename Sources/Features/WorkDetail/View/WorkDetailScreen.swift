@@ -105,9 +105,7 @@ struct WorkDetailScreen: View {
                 }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     private var summarySection: some View {
@@ -153,9 +151,7 @@ struct WorkDetailScreen: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     private var metadataSection: some View {
@@ -189,8 +185,7 @@ struct WorkDetailScreen: View {
                 .padding(.vertical, 8)
             }
         }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     private var reviewSection: some View {
@@ -217,9 +212,7 @@ struct WorkDetailScreen: View {
                             .lineLimit(3)
                     }
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .cardStyle()
             } else {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("まだレビューはありません")
@@ -229,9 +222,7 @@ struct WorkDetailScreen: View {
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .cardStyle()
             }
         }
     }

@@ -51,6 +51,10 @@ struct ReadingSettingsSheet: View {
                     .pickerStyle(.segmented)
                 }
 
+                Section("読書HUD") {
+                    Toggle("残りページ・推定読了時間を表示", isOn: $settings.showReadingHUD)
+                }
+
                 Section("プレビュー") {
                     Text("吾輩は猫である。名前はまだ無い。")
                         .font(settings.fontSize.font)

@@ -78,6 +78,8 @@ struct BookCoverView: View {
         )
         .shadow(color: .black.opacity(0.25), radius: isLarge ? 6 : 3, x: 2, y: 3)
         .drawingGroup(opaque: false)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title)、\(authorName)")
     }
 
     // MARK: - Pattern Overlay

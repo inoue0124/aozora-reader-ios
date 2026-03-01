@@ -43,6 +43,8 @@ struct WorkDetailScreen: View {
                         .foregroundStyle(isFavorite ? AppColors.favorite : .secondary)
                         .contentTransition(.symbolEffect(.replace))
                 }
+                .accessibilityLabel("お気に入り")
+                .accessibilityValue(isFavorite ? "登録済み" : "未登録")
             }
         }
         .sheet(isPresented: $showReview, onDismiss: loadReview) {

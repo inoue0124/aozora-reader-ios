@@ -9,7 +9,7 @@ struct StarRatingView: View {
             ForEach(1 ... 5, id: \.self) { star in
                 Image(systemName: star <= rating ? "star.fill" : "star")
                     .font(size)
-                    .foregroundStyle(star <= rating ? .yellow : .gray.opacity(0.3))
+                    .foregroundStyle(star <= rating ? AppColors.rating : AppColors.ratingInactive)
             }
         }
     }

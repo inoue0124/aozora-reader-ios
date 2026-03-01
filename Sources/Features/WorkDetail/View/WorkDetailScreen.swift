@@ -40,7 +40,7 @@ struct WorkDetailScreen: View {
                 } label: {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
                         .symbolEffect(.bounce, value: isFavorite)
-                        .foregroundStyle(isFavorite ? .red : .secondary)
+                        .foregroundStyle(isFavorite ? AppColors.favorite : .secondary)
                         .contentTransition(.symbolEffect(.replace))
                 }
             }
@@ -225,7 +225,7 @@ struct WorkDetailScreen: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(.blue)
+                .background(AppColors.accent)
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }

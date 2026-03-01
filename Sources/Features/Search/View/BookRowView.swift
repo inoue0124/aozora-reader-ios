@@ -29,7 +29,7 @@ struct BookRowView: View {
 
             if showCacheIcon {
                 Image(systemName: "arrow.down.circle.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(AppColors.cached)
                     .font(.caption)
             }
         }

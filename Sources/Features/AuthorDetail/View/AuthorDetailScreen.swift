@@ -121,7 +121,7 @@ struct AuthorDetailScreen: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "book")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(AppColors.accent)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(book.title)
@@ -170,11 +170,11 @@ struct AuthorDetailScreen: View {
                         Text(entry.year)
                             .font(.caption)
                             .fontWeight(.semibold)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(AppColors.timeline)
                             .frame(width: 44, alignment: .trailing)
 
                         Circle()
-                            .fill(.blue)
+                            .fill(AppColors.timeline)
                             .frame(width: 8, height: 8)
                             .padding(.top, 4)
 

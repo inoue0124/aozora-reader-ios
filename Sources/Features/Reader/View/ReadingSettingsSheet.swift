@@ -64,6 +64,10 @@ struct ReadingSettingsSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(settings.theme.backgroundColor)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .animation(.easeInOut(duration: 0.25), value: settings.fontSize)
+                        .animation(.easeInOut(duration: 0.25), value: settings.theme)
+                        .animation(.easeInOut(duration: 0.25), value: settings.lineSpacing)
+                        .animation(.easeInOut(duration: 0.25), value: settings.padding)
                 }
             }
             .navigationTitle("読書設定")

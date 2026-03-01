@@ -17,6 +17,7 @@ struct HomeScreen: View {
                 }
             }
             .padding(.vertical)
+            .animation(.easeOut(duration: 0.3), value: viewModel.isLoading)
         }
         .navigationTitle("ホーム")
         .navigationDestination(for: Book.self) { book in
@@ -149,6 +150,7 @@ private struct ShelfSection<Content: View>: View {
 
             content
         }
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
     }
 }
 

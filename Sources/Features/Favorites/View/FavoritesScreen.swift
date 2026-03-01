@@ -31,13 +31,16 @@ struct FavoritesScreen: View {
                         }
                     }
                     .onDelete { indexSet in
-                        for index in indexSet {
-                            modelContext.delete(favorites[index])
+                        withAnimation {
+                            for index in indexSet {
+                                modelContext.delete(favorites[index])
+                            }
+                            try? modelContext.save()
                         }
-                        try? modelContext.save()
                     }
                 }
                 .listStyle(.plain)
+                .animation(.default, value: favorites.count)
             }
         }
         .navigationTitle("お気に入り")

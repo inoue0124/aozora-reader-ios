@@ -23,7 +23,8 @@ struct HomeScreen: View {
             .padding(.vertical)
             .animation(.easeOut(duration: 0.3), value: viewModel.isLoading)
         }
-        .navigationTitle("ホーム")
+        .navigationTitle("青空リーダー")
+        .toolbarTitleDisplayMode(.inlineLarge)
         .navigationDestination(for: Book.self) { book in
             WorkDetailScreen(book: book)
         }

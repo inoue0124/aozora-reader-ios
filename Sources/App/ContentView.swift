@@ -1,13 +1,16 @@
+import SwiftData
 import SwiftUI
 
 struct ContentView: View {
+    @Query private var favorites: [FavoriteBook]
+
     var body: some View {
         TabView {
             NavigationStack {
                 HomeScreen()
             }
             .tabItem {
-                Label("ホーム", systemImage: "house.fill")
+                Label("ホーム", systemImage: "books.vertical.fill")
             }
 
             NavigationStack {
@@ -21,8 +24,10 @@ struct ContentView: View {
                 FavoritesScreen()
             }
             .tabItem {
-                Label("お気に入り", systemImage: "heart.fill")
+                Label("お気に入り", systemImage: "bookmark.fill")
             }
+            .badge(favorites.count)
         }
+        .tint(AppColors.accent)
     }
 }

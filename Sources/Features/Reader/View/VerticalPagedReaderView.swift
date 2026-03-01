@@ -5,6 +5,7 @@ struct VerticalPagedReaderView: UIViewRepresentable {
     let content: AttributedString
     let settings: ReadingSettings
     let savedPageRatio: Double
+    @Binding var jumpToPage: Int?
     let onScroll: (Double) -> Void
     let onPageChanged: (_ current: Int, _ total: Int) -> Void
 
@@ -27,6 +28,14 @@ struct VerticalPagedReaderView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.onScroll = onScroll
         context.coordinator.onPageChanged = onPageChanged
+
+        if let page = jumpToPage {
+            DispatchQueue.main.async {
+                jumpToPage = nil
+            }
+            context.coordinator.scrollToPage(page, in: webView)
+            return
+        }
 
         let html = buildHTML()
         guard html != context.coordinator.lastLoadedHTML else { return }
@@ -100,6 +109,16 @@ struct VerticalPagedReaderView: UIViewRepresentable {
             currentPageRatio = initialPageRatio <= 1 ? initialPageRatio : 0
             self.onScroll = onScroll
             self.onPageChanged = onPageChanged
+        }
+
+        func scrollToPage(_ page: Int, in webView: WKWebView) {
+            let scrollView = webView.scrollView
+            let pageWidth = max(scrollView.bounds.width, 1)
+            let contentWidth = scrollView.contentSize.width
+            let totalPages = max(Int(ceil(contentWidth / pageWidth)), 1)
+            let targetPage = min(max(page - 1, 0), totalPages - 1)
+            let offset = Double(targetPage) * pageWidth
+            scrollView.setContentOffset(CGPoint(x: offset, y: 0), animated: true)
         }
 
         func scrollViewDidScroll(_ scrollView: UIScrollView) {

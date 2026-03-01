@@ -6,6 +6,7 @@ struct BookCoverView: View {
     let classification: String
     var width: CGFloat = 60
     var height: CGFloat = 85
+    private let preset: CoverDesignPreset
 
     init(book: Book, width: CGFloat = 60, height: CGFloat = 85) {
         title = book.title
@@ -13,6 +14,8 @@ struct BookCoverView: View {
         classification = book.classification
         self.width = width
         self.height = height
+        let workType = WorkType.from(classification: book.classification)
+        preset = CoverDesignPreset.preset(for: workType, title: book.title)
     }
 
     init(title: String, authorName: String, classification: String = "", width: CGFloat = 60, height: CGFloat = 85) {
@@ -21,14 +24,8 @@ struct BookCoverView: View {
         self.classification = classification
         self.width = width
         self.height = height
-    }
-
-    private var workType: WorkType {
-        WorkType.from(classification: classification)
-    }
-
-    private var preset: CoverDesignPreset {
-        CoverDesignPreset.preset(for: workType, title: title)
+        let workType = WorkType.from(classification: classification)
+        preset = CoverDesignPreset.preset(for: workType, title: title)
     }
 
     private var isLarge: Bool {
@@ -80,6 +77,7 @@ struct BookCoverView: View {
                 .strokeBorder(.black.opacity(0.12), lineWidth: 0.5)
         )
         .shadow(color: .black.opacity(0.25), radius: isLarge ? 6 : 3, x: 2, y: 3)
+        .drawingGroup(opaque: false)
     }
 
     // MARK: - Pattern Overlay

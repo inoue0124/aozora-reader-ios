@@ -12,6 +12,7 @@ struct MainApp: SwiftUI.App {
             Bookmark.self,
             BookReview.self,
             ReadingHistory.self,
+            GeneratedSummary.self,
         ])
     }
 }

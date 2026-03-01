@@ -19,6 +19,7 @@ struct WorkDetailScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 headerSection
+                summarySection
                 metadataSection
                 reviewSection
                 actionSection
@@ -45,6 +46,7 @@ struct WorkDetailScreen: View {
             await viewModel.loadAuthor()
             isFavorite = favoritesVM.isFavorite(bookId: book.id, context: modelContext)
             loadReview()
+            await viewModel.loadSummary(context: modelContext)
         }
     }
 
@@ -87,6 +89,30 @@ struct WorkDetailScreen: View {
                 }
             }
         }
+    }
+
+    private var summarySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("あらすじ")
+                .font(.headline)
+
+            if viewModel.isSummaryLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else if let summary = viewModel.summary {
+                Text(summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineSpacing(4)
+            } else {
+                Text("あらすじはありません")
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private var metadataSection: some View {

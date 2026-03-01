@@ -53,6 +53,7 @@ struct WorkDetailScreen: View {
         }
         .task {
             await viewModel.loadAuthor()
+            viewModel.checkReadingProgress(context: modelContext)
             isFavorite = favoritesVM.isFavorite(bookId: book.id, context: modelContext)
             loadReview()
             isSummaryExpanded = false
@@ -69,36 +70,37 @@ struct WorkDetailScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 16) {
-                BookCoverView(book: book, width: 100, height: 140)
+        HStack(alignment: .top, spacing: 16) {
+            BookCoverView(book: book, width: 130, height: 182)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(book.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(book.title)
+                    .font(.title)
+                    .fontWeight(.bold)
 
-                    if !book.subtitle.isEmpty {
-                        Text(book.subtitle)
+                if !book.subtitle.isEmpty {
+                    Text(book.subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let author = viewModel.author {
+                    NavigationLink {
+                        AuthorDetailScreen(person: author)
+                    } label: {
+                        Label(author.fullName, systemImage: "person")
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
                     }
-
-                    if let author = viewModel.author {
-                        NavigationLink {
-                            AuthorDetailScreen(person: author)
-                        } label: {
-                            Label(author.fullName, systemImage: "person")
-                                .font(.subheadline)
-                        }
-                    } else {
-                        Label(book.authorName, systemImage: "person")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+                } else {
+                    Label(book.authorName, systemImage: "person")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private var summarySection: some View {
@@ -150,17 +152,26 @@ struct WorkDetailScreen: View {
     }
 
     private var metadataSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             if !book.classification.isEmpty {
-                MetadataRow(label: "分類", value: book.classification)
+                MetadataRow(icon: "tag", label: "分類", value: book.classification)
+                if !book.releaseDate.isEmpty || book.cardURL != nil {
+                    Divider().padding(.leading, 36)
+                }
             }
 
             if !book.releaseDate.isEmpty {
-                MetadataRow(label: "公開日", value: book.releaseDate)
+                MetadataRow(icon: "calendar", label: "公開日", value: book.releaseDate)
+                if book.cardURL != nil {
+                    Divider().padding(.leading, 36)
+                }
             }
 
             if let url = book.cardURL {
-                HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: "link")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
                     Text("図書カード")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -168,6 +179,7 @@ struct WorkDetailScreen: View {
                     Link("青空文庫で見る", destination: url)
                         .font(.subheadline)
                 }
+                .padding(.vertical, 8)
             }
         }
         .padding()
@@ -221,23 +233,37 @@ struct WorkDetailScreen: View {
         Button {
             showReader = true
         } label: {
-            Label("この作品を読む", systemImage: "book")
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(AppColors.accent)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Label(
+                viewModel.hasReadingProgress ? "続きを読む" : "この作品を読む",
+                systemImage: "book"
+            )
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(
+                LinearGradient(
+                    colors: [AppColors.accent, AppColors.accent.opacity(0.8)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .foregroundStyle(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: AppColors.accent.opacity(0.3), radius: 4, y: 2)
         }
     }
 }
 
 private struct MetadataRow: View {
+    let icon: String
     let label: String
     let value: String
 
     var body: some View {
-        HStack {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
             Text(label)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -245,5 +271,6 @@ private struct MetadataRow: View {
             Text(value)
                 .font(.subheadline)
         }
+        .padding(.vertical, 8)
     }
 }

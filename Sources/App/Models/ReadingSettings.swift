@@ -61,12 +61,16 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
     case light
     case dark
     case sepia
+    case matcha
+    case yozakura
 
     var label: String {
         switch self {
         case .light: "ライト"
         case .dark: "ダーク"
         case .sepia: "セピア"
+        case .matcha: "抹茶"
+        case .yozakura: "夜桜"
         }
     }
 
@@ -75,6 +79,8 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
         case .light: .white
         case .dark: Color(red: 0.1, green: 0.1, blue: 0.1)
         case .sepia: Color(red: 0.96, green: 0.93, blue: 0.86)
+        case .matcha: Color(red: 0.91, green: 0.94, blue: 0.89)
+        case .yozakura: Color(red: 0.16, green: 0.11, blue: 0.21)
         }
     }
 
@@ -83,6 +89,42 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
         case .light: .black
         case .dark: .white
         case .sepia: Color(red: 0.3, green: 0.2, blue: 0.1)
+        case .matcha: Color(red: 0.18, green: 0.23, blue: 0.18)
+        case .yozakura: Color(red: 0.91, green: 0.84, blue: 0.94)
+        }
+    }
+}
+
+enum FontFamily: String, CaseIterable, Sendable, Codable {
+    case hiraMincho
+    case hiraKaku
+    case yuMincho
+    case tsukushiMaruGo
+
+    var label: String {
+        switch self {
+        case .hiraMincho: "ヒラギノ明朝"
+        case .hiraKaku: "ヒラギノ角ゴ"
+        case .yuMincho: "游明朝"
+        case .tsukushiMaruGo: "筑紫A丸ゴシック"
+        }
+    }
+
+    var cssValue: String {
+        switch self {
+        case .hiraMincho: "'Hiragino Mincho ProN', serif"
+        case .hiraKaku: "'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif"
+        case .yuMincho: "'YuMincho', 'Yu Mincho', serif"
+        case .tsukushiMaruGo: "'TsukuARdGothic-Regular', 'Tsukushi A Round Gothic', sans-serif"
+        }
+    }
+
+    var uiFontName: String {
+        switch self {
+        case .hiraMincho: "HiraMinProN-W3"
+        case .hiraKaku: "HiraginoSans-W3"
+        case .yuMincho: "YuMincho"
+        case .tsukushiMaruGo: "TsukuARdGothic-Regular"
         }
     }
 }
@@ -127,6 +169,10 @@ final class ReadingSettings: @unchecked Sendable {
         didSet { save() }
     }
 
+    var fontFamily: FontFamily {
+        didSet { save() }
+    }
+
     private let defaults = UserDefaults.standard
     private let layoutModeKey = "readingLayoutMode"
     private let fontSizeKey = "readingFontSize"
@@ -134,6 +180,7 @@ final class ReadingSettings: @unchecked Sendable {
     private let paddingKey = "readingPadding"
     private let themeKey = "readingTheme"
     private let showReadingHUDKey = "readingShowHUD"
+    private let fontFamilyKey = "readingFontFamily"
 
     private init() {
         layoutMode = ReadingLayoutMode(rawValue: defaults.string(forKey: layoutModeKey) ?? "") ?? .verticalPaged
@@ -142,6 +189,7 @@ final class ReadingSettings: @unchecked Sendable {
         padding = PaddingLevel(rawValue: defaults.integer(forKey: paddingKey)) ?? .normal
         theme = ReadingTheme(rawValue: defaults.string(forKey: themeKey) ?? "") ?? .light
         showReadingHUD = defaults.object(forKey: showReadingHUDKey) as? Bool ?? true
+        fontFamily = FontFamily(rawValue: defaults.string(forKey: fontFamilyKey) ?? "") ?? .hiraMincho
     }
 
     private func save() {
@@ -151,5 +199,6 @@ final class ReadingSettings: @unchecked Sendable {
         defaults.set(padding.rawValue, forKey: paddingKey)
         defaults.set(theme.rawValue, forKey: themeKey)
         defaults.set(showReadingHUD, forKey: showReadingHUDKey)
+        defaults.set(fontFamily.rawValue, forKey: fontFamilyKey)
     }
 }

@@ -78,8 +78,9 @@ struct ReaderScreen: View {
                 TextField("ページ番号", text: $pageJumpText)
                     .keyboardType(.numberPad)
                 Button("移動") {
-                    if let page = Int(pageJumpText),
-                       page >= 1, page <= totalPages
+                    if
+                        let page = Int(pageJumpText),
+                        page >= 1, page <= totalPages
                     {
                         jumpToPage = page
                     }
@@ -142,7 +143,7 @@ struct ReaderScreen: View {
                         Color.clear.frame(height: 0).id("top")
 
                         Text(content)
-                            .font(settings.fontSize.font)
+                            .font(.custom(settings.fontFamily.uiFontName, size: CGFloat(settings.fontSize.rawValue)))
                             .lineSpacing(settings.lineSpacing.value)
                             .foregroundStyle(settings.theme.textColor)
                             .textSelection(.enabled)

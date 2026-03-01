@@ -5,8 +5,8 @@ struct BookCoverView: View {
     var width: CGFloat = 60
     var height: CGFloat = 85
 
-    private var coverColor: Color {
-        let hash = abs(book.title.hashValue)
+    static func coverColor(forTitle title: String) -> Color {
+        let hash = abs(title.hashValue)
         let colors: [Color] = [
             Color(red: 0.2, green: 0.4, blue: 0.6),
             Color(red: 0.6, green: 0.3, blue: 0.3),
@@ -18,6 +18,10 @@ struct BookCoverView: View {
             Color(red: 0.3, green: 0.4, blue: 0.5),
         ]
         return colors[hash % colors.count]
+    }
+
+    private var coverColor: Color {
+        Self.coverColor(forTitle: book.title)
     }
 
     var body: some View {

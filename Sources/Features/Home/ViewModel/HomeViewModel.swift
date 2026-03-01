@@ -8,7 +8,6 @@ final class HomeViewModel {
     var recommendedAuthors: [RecommendedAuthor] = []
     var recentReviews: [BookReview] = []
     var workTypeShelves: [WorkTypeShelf] = []
-    var newestBooks: [Book] = []
     var isLoading = false
     var isFallbackAuthors = false
 
@@ -20,11 +19,8 @@ final class HomeViewModel {
         recentReviews = loadRecentReviews(context: context)
         recommendedAuthors = await loadRecommendedAuthors(context: context)
 
-        // Async loads without context in parallel
-        async let shelves = loadWorkTypeShelves()
-        async let newest = loadNewestBooks()
-        workTypeShelves = await shelves
-        newestBooks = await newest
+        // Async load without context
+        workTypeShelves = await loadWorkTypeShelves()
 
         isFallbackAuthors = recommendedAuthors.first?.isFallback ?? true
         isLoading = false
@@ -55,21 +51,19 @@ final class HomeViewModel {
     private func loadWorkTypeShelves() async -> [WorkTypeShelf] {
         var shelves: [WorkTypeShelf] = []
         for workType in WorkType.shelfTypes {
-            let books = (try? await CatalogService.shared.booksByWorkType(workType)) ?? []
+            let books = await (try? CatalogService.shared.booksByWorkType(workType)) ?? []
             if !books.isEmpty {
                 shelves.append(WorkTypeShelf(workType: workType, books: books))
             }
         }
         return shelves
     }
-
-    private func loadNewestBooks() async -> [Book] {
-        (try? await CatalogService.shared.newestBooks()) ?? []
-    }
 }
 
-struct WorkTypeShelf: Identifiable {
+struct WorkTypeShelf: Identifiable, Sendable {
     let workType: WorkType
     let books: [Book]
-    var id: String { workType.rawValue }
+    var id: String {
+        workType.rawValue
+    }
 }

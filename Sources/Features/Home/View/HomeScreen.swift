@@ -51,7 +51,7 @@ struct HomeScreen: View {
                     LazyHStack(spacing: 12) {
                         ForEach(viewModel.continueReadingBooks, id: \.bookId) { bookmark in
                             NavigationLink {
-                                BookmarkDestination(bookmark: bookmark)
+                                BookDestinationByID(bookId: bookmark.bookId)
                             } label: {
                                 ContinueReadingCard(bookmark: bookmark)
                             }
@@ -97,7 +97,7 @@ struct HomeScreen: View {
                     LazyHStack(spacing: 12) {
                         ForEach(viewModel.recentReviews, id: \.bookId) { review in
                             NavigationLink {
-                                ReviewBookDestination(review: review)
+                                BookDestinationByID(bookId: review.bookId)
                             } label: {
                                 RecentReviewCard(review: review)
                             }
@@ -158,7 +158,7 @@ private struct ContinueReadingCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             RoundedRectangle(cornerRadius: 6)
-                .fill(coverColor.gradient)
+                .fill(BookCoverView.coverColor(forTitle: bookmark.title).gradient)
                 .frame(width: 100, height: 140)
                 .overlay {
                     VStack(spacing: 2) {
@@ -186,21 +186,6 @@ private struct ContinueReadingCard: View {
                 .lineLimit(1)
                 .frame(width: 100, alignment: .leading)
         }
-    }
-
-    private var coverColor: Color {
-        let hash = abs(bookmark.title.hashValue)
-        let colors: [Color] = [
-            Color(red: 0.2, green: 0.4, blue: 0.6),
-            Color(red: 0.6, green: 0.3, blue: 0.3),
-            Color(red: 0.3, green: 0.5, blue: 0.3),
-            Color(red: 0.5, green: 0.4, blue: 0.6),
-            Color(red: 0.6, green: 0.5, blue: 0.3),
-            Color(red: 0.4, green: 0.5, blue: 0.5),
-            Color(red: 0.5, green: 0.3, blue: 0.5),
-            Color(red: 0.3, green: 0.4, blue: 0.5),
-        ]
-        return colors[hash % colors.count]
     }
 }
 
@@ -292,40 +277,30 @@ private struct BookShelfCard: View {
     }
 }
 
-// MARK: - Navigation Destinations
+// MARK: - Navigation Destination
 
-private struct BookmarkDestination: View {
-    let bookmark: Bookmark
+private struct BookDestinationByID: View {
+    let bookId: Int
     @State private var book: Book?
+    @State private var hasFailed = false
 
     var body: some View {
         Group {
             if let book {
                 WorkDetailScreen(book: book)
+            } else if hasFailed {
+                ContentUnavailableView("作品が見つかりません", systemImage: "book.closed")
             } else {
                 ProgressView()
             }
         }
         .task {
-            book = try? await CatalogService.shared.book(id: bookmark.bookId)
-        }
-    }
-}
-
-private struct ReviewBookDestination: View {
-    let review: BookReview
-    @State private var book: Book?
-
-    var body: some View {
-        Group {
-            if let book {
-                WorkDetailScreen(book: book)
-            } else {
-                ProgressView()
+            do {
+                book = try await CatalogService.shared.book(id: bookId)
+                if book == nil { hasFailed = true }
+            } catch {
+                hasFailed = true
             }
-        }
-        .task {
-            book = try? await CatalogService.shared.book(id: review.bookId)
         }
     }
 }

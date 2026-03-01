@@ -41,7 +41,7 @@ struct HomeScreen: View {
         VStack(spacing: 12) {
             Image(systemName: "books.vertical.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.blue)
+                .foregroundStyle(AppColors.accent)
 
             Text("青空リーダーへようこそ")
                 .font(.title3.bold())
@@ -56,7 +56,7 @@ struct HomeScreen: View {
                     .font(.headline)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
-                    .background(.blue, in: Capsule())
+                    .background(AppColors.accent, in: Capsule())
                     .foregroundStyle(.white)
             }
             .padding(.top, 4)

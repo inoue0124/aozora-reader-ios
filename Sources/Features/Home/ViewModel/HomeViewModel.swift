@@ -15,16 +15,19 @@ final class HomeViewModel {
     func load(context: ModelContext) async {
         isLoading = true
 
-        // Synchronous SwiftData fetches (must stay on MainActor)
+        // Fast synchronous SwiftData fetches → show immediately
         continueReadingBooks = loadContinueReading(context: context)
         recentReviews = loadRecentReviews(context: context)
-        recommendedAuthors = await loadRecommendedAuthors(context: context)
-
-        // Async load without context
-        workTypeShelves = await loadWorkTypeShelves()
-
-        isFallbackAuthors = recommendedAuthors.first?.isFallback ?? true
         isLoading = false
+
+        // Start shelf loading concurrently (no context needed)
+        async let shelvesTask = loadWorkTypeShelves()
+
+        // Authors need context — run while shelves load in parallel
+        recommendedAuthors = await loadRecommendedAuthors(context: context)
+        isFallbackAuthors = recommendedAuthors.first?.isFallback ?? true
+
+        workTypeShelves = await shelvesTask
 
         // Load author portraits in background after content is shown
         await loadAuthorPortraits()
@@ -53,14 +56,23 @@ final class HomeViewModel {
     }
 
     private func loadWorkTypeShelves() async -> [WorkTypeShelf] {
-        var shelves: [WorkTypeShelf] = []
-        for workType in WorkType.shelfTypes {
-            let books = await (try? CatalogService.shared.booksByWorkType(workType)) ?? []
-            if !books.isEmpty {
-                shelves.append(WorkTypeShelf(workType: workType, books: books))
+        let shelfTypes = WorkType.shelfTypes
+        return await withTaskGroup(of: (Int, WorkTypeShelf?).self) { group in
+            for (index, workType) in shelfTypes.enumerated() {
+                group.addTask {
+                    let books = await (try? CatalogService.shared.booksByWorkType(workType)) ?? []
+                    let shelf = books.isEmpty ? nil : WorkTypeShelf(workType: workType, books: books)
+                    return (index, shelf)
+                }
             }
+            var indexed: [(Int, WorkTypeShelf)] = []
+            for await (index, shelf) in group {
+                if let shelf {
+                    indexed.append((index, shelf))
+                }
+            }
+            return indexed.sorted { $0.0 < $1.0 }.map(\.1)
         }
-        return shelves
     }
 
     private func loadAuthorPortraits() async {

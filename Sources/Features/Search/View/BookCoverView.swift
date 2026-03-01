@@ -24,24 +24,46 @@ struct BookCoverView: View {
         Self.coverColor(forTitle: book.title)
     }
 
+    private var isLarge: Bool {
+        width >= 90
+    }
+
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
+        ZStack(alignment: .bottom) {
+            RoundedRectangle(cornerRadius: 8)
                 .fill(coverColor.gradient)
 
-            VStack(spacing: 2) {
-                Text(String(book.title.prefix(4)))
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-
-                Text("参考ビジュアル")
-                    .font(.system(size: 5))
-                    .foregroundStyle(.white.opacity(0.6))
+            // Spine accent
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(.white.opacity(0.15))
+                    .frame(width: 3)
+                Spacer()
             }
-            .padding(4)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            // Title area
+            VStack(spacing: 4) {
+                Spacer()
+
+                Text(book.title)
+                    .font(.system(size: isLarge ? 13 : 10, weight: .bold, design: .serif))
+                    .foregroundStyle(.white)
+                    .lineLimit(isLarge ? 4 : 2)
+                    .multilineTextAlignment(.center)
+                    .shadow(color: .black.opacity(0.3), radius: 1, y: 1)
+
+                Text(book.authorName)
+                    .font(.system(size: isLarge ? 9 : 7, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .lineLimit(1)
+
+                Spacer()
+            }
+            .padding(.horizontal, isLarge ? 10 : 6)
+            .padding(.vertical, isLarge ? 12 : 6)
         }
         .frame(width: width, height: height)
+        .shadow(color: .black.opacity(0.2), radius: 4, x: 2, y: 3)
     }
 }

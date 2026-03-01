@@ -27,8 +27,12 @@ struct VerticalPagedReaderView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.onScroll = onScroll
         context.coordinator.onPageChanged = onPageChanged
+
+        let html = buildHTML()
+        guard html != context.coordinator.lastLoadedHTML else { return }
+        context.coordinator.lastLoadedHTML = html
         context.coordinator.isLoadingHTML = true
-        webView.loadHTMLString(buildHTML(), baseURL: nil)
+        webView.loadHTMLString(html, baseURL: nil)
     }
 
     private func buildHTML() -> String {
@@ -84,6 +88,7 @@ struct VerticalPagedReaderView: UIViewRepresentable {
         var onPageChanged: (_ current: Int, _ total: Int) -> Void
         weak var webView: WKWebView?
         var isLoadingHTML = false
+        var lastLoadedHTML: String?
         private var currentPageRatio: Double
 
         init(

@@ -224,7 +224,7 @@ private struct RecommendedAuthorCard: View {
                 if let url = portraitURL {
                     AsyncImage(url: url) { phase in
                         switch phase {
-                        case .success(let image):
+                        case let .success(image):
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)

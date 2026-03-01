@@ -27,7 +27,8 @@ final class HomeViewModel {
         recommendedAuthors = await loadRecommendedAuthors(context: context)
         isFallbackAuthors = recommendedAuthors.first?.isFallback ?? true
 
-        workTypeShelves = await shelvesTask
+        let weights = RecommendationService.shared.workTypeWeights(context: context)
+        workTypeShelves = await Self.sortedShelves(shelvesTask, by: weights)
 
         // Load author portraits in background after content is shown
         await loadAuthorPortraits()
@@ -72,6 +73,25 @@ final class HomeViewModel {
                 }
             }
             return indexed.sorted { $0.0 < $1.0 }.map(\.1)
+        }
+    }
+
+    /// 重みで棚を並び替える。重みが空またはすべて同値ならデフォルト順を維持
+    static func sortedShelves(
+        _ shelves: [WorkTypeShelf],
+        by weights: [WorkType: Double]
+    ) -> [WorkTypeShelf] {
+        guard !weights.isEmpty else { return shelves }
+
+        let defaultOrder = WorkType.shelfTypes
+        return shelves.sorted { lhs, rhs in
+            let lw = weights[lhs.workType, default: 0]
+            let rw = weights[rhs.workType, default: 0]
+            if lw != rw { return lw > rw }
+            // 同率時はデフォルト順で安定ソート
+            let li = defaultOrder.firstIndex(of: lhs.workType) ?? Int.max
+            let ri = defaultOrder.firstIndex(of: rhs.workType) ?? Int.max
+            return li < ri
         }
     }
 

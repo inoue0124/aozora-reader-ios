@@ -105,6 +105,41 @@ final class RecommendationService {
         }
     }
 
+    // MARK: - WorkType Weights
+
+    /// 読了・レビュー履歴から WorkType ごとの重みを算出する
+    /// コールドスタート（履歴 + レビュー < 3）時は空辞書を返す
+    func workTypeWeights(context: ModelContext) -> [WorkType: Double] {
+        let histories = fetchAllHistory(context: context)
+        let reviews = fetchAllReviews(context: context)
+
+        if histories.count + reviews.count < 3 {
+            return [:]
+        }
+
+        var weights: [WorkType: Double] = [:]
+
+        // bookId → classification マッピング（レビュー参照用）
+        var classificationByBookId: [Int: String] = [:]
+
+        for history in histories {
+            let wt = WorkType.from(classification: history.classification)
+            classificationByBookId[history.bookId] = history.classification
+            guard wt != .other else { continue }
+            let score = Double(min(history.viewCount, 5))
+            weights[wt, default: 0] += score
+        }
+
+        for review in reviews {
+            guard let classification = classificationByBookId[review.bookId] else { continue }
+            let wt = WorkType.from(classification: classification)
+            guard wt != .other else { continue }
+            weights[wt, default: 0] += Double(review.rating) * 2.0
+        }
+
+        return weights
+    }
+
     // MARK: - Results
 
     private func buildResults(from scores: [Int: Double], limit: Int) async -> [RecommendedAuthor] {

@@ -115,4 +115,87 @@ struct HomeViewModelTests {
         let result = vm.loadRecentReviews(context: container.mainContext)
         #expect(result.isEmpty)
     }
+
+    // MARK: - Shelf Sorting
+
+    @Test("棚並び替え: 重みに応じて降順で並ぶ")
+    func sortedShelvesByWeightDescending() {
+        let shelves = [
+            WorkTypeShelf(workType: .shortStory, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .novel, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .essay, books: [makeDummyBook()]),
+        ]
+        let weights: [WorkType: Double] = [.essay: 10.0, .novel: 5.0, .shortStory: 1.0]
+
+        let result = HomeViewModel.sortedShelves(shelves, by: weights)
+
+        #expect(result[0].workType == .essay)
+        #expect(result[1].workType == .novel)
+        #expect(result[2].workType == .shortStory)
+    }
+
+    @Test("棚並び替え: 重みが空ならデフォルト順を維持")
+    func sortedShelvesDefaultOrderWhenNoWeights() {
+        let shelves = [
+            WorkTypeShelf(workType: .shortStory, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .novel, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .essay, books: [makeDummyBook()]),
+        ]
+
+        let result = HomeViewModel.sortedShelves(shelves, by: [:])
+
+        #expect(result[0].workType == .shortStory)
+        #expect(result[1].workType == .novel)
+        #expect(result[2].workType == .essay)
+    }
+
+    @Test("棚並び替え: 同率重みでデフォルト順を維持")
+    func sortedShelvesTieBreaksByDefaultOrder() {
+        let shelves = [
+            WorkTypeShelf(workType: .poetry, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .drama, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .essay, books: [makeDummyBook()]),
+        ]
+        let weights: [WorkType: Double] = [.poetry: 5.0, .drama: 5.0, .essay: 5.0]
+
+        let result = HomeViewModel.sortedShelves(shelves, by: weights)
+
+        // デフォルト順: essay < drama < poetry
+        #expect(result[0].workType == .essay)
+        #expect(result[1].workType == .drama)
+        #expect(result[2].workType == .poetry)
+    }
+
+    @Test("棚並び替え: 重みなしの棚は末尾に配置")
+    func sortedShelvesUnweightedAtEnd() {
+        let shelves = [
+            WorkTypeShelf(workType: .shortStory, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .novel, books: [makeDummyBook()]),
+            WorkTypeShelf(workType: .essay, books: [makeDummyBook()]),
+        ]
+        let weights: [WorkType: Double] = [.essay: 10.0]
+
+        let result = HomeViewModel.sortedShelves(shelves, by: weights)
+
+        #expect(result[0].workType == .essay)
+        // 残りはデフォルト順
+        #expect(result[1].workType == .shortStory)
+        #expect(result[2].workType == .novel)
+    }
+
+    private func makeDummyBook() -> Book {
+        Book(
+            id: 1,
+            title: "テスト",
+            titleYomi: "テスト",
+            personId: 1,
+            authorName: "著者",
+            cardUrl: "",
+            textUrl: "",
+            htmlUrl: "",
+            releaseDate: "",
+            subtitle: "",
+            classification: ""
+        )
+    }
 }

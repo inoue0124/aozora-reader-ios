@@ -11,6 +11,7 @@ struct ReaderScreen: View {
     @State private var scrollOffset: Double = 0
     @State private var contentHeight: Double = 0
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
 
     init(book: Book) {
         self.book = book
@@ -18,115 +19,130 @@ struct ReaderScreen: View {
     }
 
     var body: some View {
-        Group {
-            if viewModel.isLoading {
-                VStack(spacing: 16) {
-                    ProgressView()
-                    Text("本文を取得中…")
-                        .foregroundStyle(.secondary)
-                }
-            } else if let error = viewModel.errorMessage {
-                ContentUnavailableView(
-                    "読み込みエラー",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text(error)
-                )
-            } else if let content = viewModel.content {
-                if settings.layoutMode == .verticalPaged {
-                    ZStack(alignment: .bottomTrailing) {
-                        VerticalPagedReaderView(
-                            content: content,
-                            settings: settings,
-                            savedPageRatio: viewModel.savedScrollOffset
-                        ) { ratio in
-                            viewModel.saveBookmark(scrollOffset: ratio, context: modelContext)
-                        } onPageChanged: { current, total in
-                            currentPage = current
-                            totalPages = total
-                        }
-                        .background(settings.theme.backgroundColor)
+        NavigationStack {
+            Group {
+                if viewModel.isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                        Text("本文を取得中…")
+                            .foregroundStyle(.secondary)
+                    }
+                } else if let error = viewModel.errorMessage {
+                    ContentUnavailableView(
+                        "読み込みエラー",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(error)
+                    )
+                } else if let content = viewModel.content {
+                    if settings.layoutMode == .verticalPaged {
+                        ZStack(alignment: .bottomTrailing) {
+                            VerticalPagedReaderView(
+                                content: content,
+                                settings: settings,
+                                savedPageRatio: viewModel.savedScrollOffset
+                            ) { ratio in
+                                viewModel.saveBookmark(
+                                    scrollOffset: ratio, context: modelContext
+                                )
+                            } onPageChanged: { current, total in
+                                currentPage = current
+                                totalPages = total
+                            }
+                            .background(settings.theme.backgroundColor)
 
-                        if settings.showReadingHUD {
-                            readingHUD
+                            if settings.showReadingHUD {
+                                readingHUD
+                            }
+                        }
+                    } else {
+                        ZStack(alignment: .bottomTrailing) {
+                            ScrollViewReader { _ in
+                                ScrollView {
+                                    VStack(spacing: 0) {
+                                        Color.clear
+                                            .frame(height: 0)
+                                            .id("top")
+
+                                        Text(content)
+                                            .font(settings.fontSize.font)
+                                            .lineSpacing(settings.lineSpacing.value)
+                                            .foregroundStyle(settings.theme.textColor)
+                                            .textSelection(.enabled)
+                                            .padding(settings.padding.value)
+                                    }
+                                    .background(
+                                        GeometryReader { geo in
+                                            Color.clear.preference(
+                                                key: ScrollOffsetKey.self,
+                                                value: -geo.frame(in: .named("scroll")).origin.y
+                                            )
+                                        }
+                                    )
+                                    .background(
+                                        GeometryReader { geo in
+                                            Color.clear.preference(
+                                                key: ContentHeightKey.self,
+                                                value: geo.size.height
+                                            )
+                                        }
+                                    )
+                                }
+                                .coordinateSpace(name: "scroll")
+                                .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                                    scrollOffset = offset
+                                    viewModel.saveBookmark(
+                                        scrollOffset: offset, context: modelContext
+                                    )
+                                    updateHorizontalPages()
+                                }
+                                .onPreferenceChange(ContentHeightKey.self) { height in
+                                    contentHeight = height
+                                    updateHorizontalPages()
+                                }
+                            }
+                            .background(settings.theme.backgroundColor)
+
+                            if settings.showReadingHUD {
+                                readingHUD
+                            }
                         }
                     }
                 } else {
-                    ZStack(alignment: .bottomTrailing) {
-                        ScrollViewReader { _ in
-                            ScrollView {
-                                VStack(spacing: 0) {
-                                    Color.clear
-                                        .frame(height: 0)
-                                        .id("top")
-
-                                    Text(content)
-                                        .font(settings.fontSize.font)
-                                        .lineSpacing(settings.lineSpacing.value)
-                                        .foregroundStyle(settings.theme.textColor)
-                                        .textSelection(.enabled)
-                                        .padding(settings.padding.value)
-                                }
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear.preference(
-                                            key: ScrollOffsetKey.self,
-                                            value: -geo.frame(in: .named("scroll")).origin.y
-                                        )
-                                    }
-                                )
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear.preference(
-                                            key: ContentHeightKey.self,
-                                            value: geo.size.height
-                                        )
-                                    }
-                                )
-                            }
-                            .coordinateSpace(name: "scroll")
-                            .onPreferenceChange(ScrollOffsetKey.self) { offset in
-                                scrollOffset = offset
-                                viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
-                                updateHorizontalPages()
-                            }
-                            .onPreferenceChange(ContentHeightKey.self) { height in
-                                contentHeight = height
-                                updateHorizontalPages()
-                            }
-                        }
-                        .background(settings.theme.backgroundColor)
-
-                        if settings.showReadingHUD {
-                            readingHUD
-                        }
+                    ContentUnavailableView(
+                        "本文が表示できません",
+                        systemImage: "doc.text.magnifyingglass",
+                        description: Text(
+                            "別の作品で試してみて。改善するから、タイトルを教えてくれると助かる"
+                        )
+                    )
+                }
+            }
+            .navigationTitle(book.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
                 }
-            } else {
-                ContentUnavailableView(
-                    "本文が表示できません",
-                    systemImage: "doc.text.magnifyingglass",
-                    description: Text("別の作品で試してみて。改善するから、タイトルを教えてくれると助かる")
-                )
-            }
-        }
-        .navigationTitle(book.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showSettings = true
-                } label: {
-                    Image(systemName: "textformat.size")
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "textformat.size")
+                    }
                 }
             }
-        }
-        .sheet(isPresented: $showSettings) {
-            ReadingSettingsSheet(settings: settings)
-        }
-        .task {
-            viewModel.loadBookmark(context: modelContext)
-            ReadingHistoryService.shared.recordView(book: book, context: modelContext)
-            await viewModel.loadContent()
+            .sheet(isPresented: $showSettings) {
+                ReadingSettingsSheet(settings: settings)
+            }
+            .task {
+                viewModel.loadBookmark(context: modelContext)
+                ReadingHistoryService.shared.recordView(book: book, context: modelContext)
+                await viewModel.loadContent()
+            }
         }
     }
 

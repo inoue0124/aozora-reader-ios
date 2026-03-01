@@ -7,6 +7,7 @@ struct WorkDetailScreen: View {
     @State private var favoritesVM = FavoritesViewModel()
     @State private var isFavorite = false
     @State private var showReview = false
+    @State private var showReader = false
     @State private var review: BookReview?
     @State private var isSummaryExpanded = false
     @Environment(\.modelContext) private var modelContext
@@ -42,6 +43,9 @@ struct WorkDetailScreen: View {
         }
         .sheet(isPresented: $showReview, onDismiss: loadReview) {
             ReviewSheet(book: book)
+        }
+        .fullScreenCover(isPresented: $showReader) {
+            ReaderScreen(book: book)
         }
         .task {
             await viewModel.loadAuthor()
@@ -198,8 +202,8 @@ struct WorkDetailScreen: View {
     }
 
     private var actionSection: some View {
-        NavigationLink {
-            ReaderScreen(book: book)
+        Button {
+            showReader = true
         } label: {
             Label("この作品を読む", systemImage: "book")
                 .font(.headline)

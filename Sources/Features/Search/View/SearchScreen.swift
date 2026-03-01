@@ -38,6 +38,7 @@ struct SearchScreen: View {
             }
         }
         .listStyle(.plain)
+        .animation(.easeOut(duration: 0.25), value: viewModel.results.count)
         .searchable(
             text: $viewModel.query,
             placement: .navigationBarDrawer(displayMode: .always),

@@ -34,10 +34,14 @@ struct WorkDetailScreen: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     favoritesVM.toggleFavorite(book: book, context: modelContext)
-                    isFavorite.toggle()
+                    withAnimation(.bouncy(duration: 0.3)) {
+                        isFavorite.toggle()
+                    }
                 } label: {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        .symbolEffect(.bounce, value: isFavorite)
                         .foregroundStyle(isFavorite ? .red : .secondary)
+                        .contentTransition(.symbolEffect(.replace))
                 }
             }
         }
@@ -114,7 +118,9 @@ struct WorkDetailScreen: View {
 
                 if summary.count > 70 {
                     Button {
-                        isSummaryExpanded.toggle()
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isSummaryExpanded.toggle()
+                        }
                     } label: {
                         Text(isSummaryExpanded ? "閉じる" : "もっと見る")
                             .font(.caption)

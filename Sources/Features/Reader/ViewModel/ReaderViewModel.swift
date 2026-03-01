@@ -63,6 +63,7 @@ final class ReaderViewModel {
                 bookId: book.id,
                 title: book.title,
                 authorName: book.authorName,
+                classification: book.classification,
                 scrollOffset: scrollOffset
             )
             context.insert(bookmark)

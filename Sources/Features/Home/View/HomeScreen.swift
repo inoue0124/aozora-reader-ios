@@ -157,45 +157,15 @@ private struct ShelfSection<Content: View>: View {
 private struct ContinueReadingCard: View {
     let bookmark: Bookmark
 
-    private var coverColor: Color {
-        BookCoverView.coverColor(forTitle: bookmark.title)
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ZStack(alignment: .bottom) {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(coverColor.gradient)
-                    .frame(width: 110, height: 155)
-
-                // Spine accent
-                HStack(spacing: 0) {
-                    Rectangle()
-                        .fill(.white.opacity(0.15))
-                        .frame(width: 3)
-                    Spacer()
-                }
-                .frame(width: 110, height: 155)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                VStack(spacing: 4) {
-                    Text(bookmark.title)
-                        .font(.system(size: 13, weight: .bold, design: .serif))
-                        .foregroundStyle(.white)
-                        .lineLimit(4)
-                        .multilineTextAlignment(.center)
-                        .shadow(color: .black.opacity(0.3), radius: 1, y: 1)
-
-                    Text(bookmark.authorName)
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.8))
-                        .lineLimit(1)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 12)
-                .frame(width: 110)
-            }
-            .shadow(color: .black.opacity(0.2), radius: 4, x: 2, y: 3)
+            BookCoverView(
+                title: bookmark.title,
+                authorName: bookmark.authorName,
+                classification: bookmark.classification,
+                width: 110,
+                height: 155
+            )
 
             Text(bookmark.title)
                 .font(.subheadline)

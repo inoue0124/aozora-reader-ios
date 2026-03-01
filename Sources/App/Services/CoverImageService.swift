@@ -4,20 +4,35 @@ import SwiftUI
 actor CoverImageService {
     static let shared = CoverImageService()
 
+    /// プリセットキャッシュ（bookId → CoverDesignPreset）
+    private var presetCache: [Int: CoverDesignPreset] = [:]
+
     private init() {}
 
-    func coverColor(for book: Book) -> Color {
-        let hash = abs(book.title.hashValue)
-        let colors: [Color] = [
-            Color(red: 0.2, green: 0.4, blue: 0.6),
-            Color(red: 0.6, green: 0.3, blue: 0.3),
-            Color(red: 0.3, green: 0.5, blue: 0.3),
-            Color(red: 0.5, green: 0.4, blue: 0.6),
-            Color(red: 0.6, green: 0.5, blue: 0.3),
-            Color(red: 0.4, green: 0.5, blue: 0.5),
-            Color(red: 0.5, green: 0.3, blue: 0.5),
-            Color(red: 0.3, green: 0.4, blue: 0.5),
-        ]
-        return colors[hash % colors.count]
+    /// Book からプリセットを取得（キャッシュ付き）
+    func preset(for book: Book) -> CoverDesignPreset {
+        if let cached = presetCache[book.id] {
+            return cached
+        }
+        let workType = WorkType.from(classification: book.classification)
+        let result = CoverDesignPreset.preset(for: workType, title: book.title)
+        presetCache[book.id] = result
+        return result
+    }
+
+    /// タイトルと分類からプリセットを取得（フォールバック付き）
+    func preset(title: String, classification: String) -> CoverDesignPreset {
+        let workType = WorkType.from(classification: classification)
+        return CoverDesignPreset.preset(for: workType, title: title)
+    }
+
+    /// フォールバック：分類情報がない場合のプリセット
+    func fallbackPreset(title: String) -> CoverDesignPreset {
+        CoverDesignPreset.preset(for: .other, title: title)
+    }
+
+    /// キャッシュクリア
+    func clearCache() {
+        presetCache.removeAll()
     }
 }

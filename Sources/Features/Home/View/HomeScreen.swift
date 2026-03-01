@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeScreen: View {
     @State private var viewModel = HomeViewModel()
+    @State private var showWelcome = !UserDefaults.standard.bool(forKey: "hasSeenWelcome")
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -10,6 +11,9 @@ struct HomeScreen: View {
                 if viewModel.isLoading {
                     loadingSection
                 } else {
+                    if showWelcome {
+                        welcomeSection
+                    }
                     continueReadingSection
                     recommendedAuthorsSection
                     recentReviewsSection
@@ -29,6 +33,49 @@ struct HomeScreen: View {
         .task {
             await viewModel.load(context: modelContext)
         }
+    }
+
+    // MARK: - Welcome
+
+    private var welcomeSection: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "books.vertical.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(.blue)
+
+            Text("青空リーダーへようこそ")
+                .font(.title3.bold())
+
+            Text("青空文庫の作品を探して読んでみよう")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            NavigationLink(value: "search") {
+                Label("作品を探す", systemImage: "magnifyingglass")
+                    .font(.headline)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                    .background(.blue, in: Capsule())
+                    .foregroundStyle(.white)
+            }
+            .padding(.top, 4)
+
+            Button("閉じる") {
+                withAnimation {
+                    showWelcome = false
+                    UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .padding(.horizontal)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal)
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
 
     // MARK: - Loading
@@ -88,6 +135,14 @@ struct HomeScreen: View {
                     }
                     .padding(.horizontal)
                 }
+            }
+        } else if !showWelcome {
+            ShelfSection(title: "続きから読む", systemImage: "bookmark.fill") {
+                Text("作品を読み始めると、ここに表示されます")
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
             }
         }
     }

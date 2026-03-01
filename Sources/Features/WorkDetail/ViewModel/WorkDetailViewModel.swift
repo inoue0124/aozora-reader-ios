@@ -1,14 +1,18 @@
 import Foundation
+import SwiftData
 
 @Observable
 @MainActor
 final class WorkDetailViewModel {
     let book: Book
     var author: Person?
+    var summary: String?
     var isLoading = false
+    var isSummaryLoading = false
     var errorMessage: String?
 
     private let catalogService = CatalogService.shared
+    private let summaryService = SummaryService.shared
 
     init(book: Book) {
         self.book = book
@@ -22,5 +26,11 @@ final class WorkDetailViewModel {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    func loadSummary(context: ModelContext) async {
+        isSummaryLoading = true
+        summary = await summaryService.summary(for: book.id, context: context)
+        isSummaryLoading = false
     }
 }

@@ -9,6 +9,7 @@ final class WorkDetailViewModel {
     var summary: String?
     var isLoading = false
     var isSummaryLoading = false
+    var hasReadingProgress = false
     var errorMessage: String?
 
     private let catalogService = CatalogService.shared
@@ -26,6 +27,14 @@ final class WorkDetailViewModel {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    func checkReadingProgress(context: ModelContext) {
+        let bookId = book.id
+        let descriptor = FetchDescriptor<Bookmark>(
+            predicate: #Predicate { $0.bookId == bookId }
+        )
+        hasReadingProgress = (try? context.fetch(descriptor).first) != nil
     }
 
     func loadSummary(context: ModelContext) async {

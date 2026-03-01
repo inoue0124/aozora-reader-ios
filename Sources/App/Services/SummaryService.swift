@@ -6,28 +6,41 @@ import SwiftData
 final class SummaryService {
     static let shared = SummaryService()
 
+    static let safetyFallback = "この作品のあらすじは現在準備中です。作品を読んでお楽しみください。"
+
     private var bundledSummaries: [Int: String]?
+    private let qualityGuard = SummaryQualityGuard()
 
     private init() {}
 
     func summary(for bookId: Int, context: ModelContext) async -> String? {
         // 1. Fixed JSON (highest priority)
         if let bundled = try? loadBundledSummaries(), let text = bundled[bookId] {
-            return text
+            return applyGuard(text)
         }
 
         // 2. SwiftData cache
         if let cached = fetchCachedSummary(bookId: bookId, context: context) {
-            return cached.summary
+            return applyGuard(cached.summary)
         }
 
         // 3. Fallback: generate from text beginning
         if let fallback = await generateFallbackSummary(for: bookId) {
-            saveSummary(bookId: bookId, summary: fallback, context: context)
-            return fallback
+            let guarded = applyGuard(fallback)
+            saveSummary(bookId: bookId, summary: guarded, context: context)
+            return guarded
         }
 
         return nil
+    }
+
+    private func applyGuard(_ text: String) -> String {
+        switch qualityGuard.validate(text) {
+        case let .valid(cleaned):
+            cleaned
+        case .rejected:
+            Self.safetyFallback
+        }
     }
 
     private func loadBundledSummaries() throws -> [Int: String] {

@@ -123,12 +123,17 @@ final class ReadingSettings: @unchecked Sendable {
         didSet { save() }
     }
 
+    var showReadingHUD: Bool {
+        didSet { save() }
+    }
+
     private let defaults = UserDefaults.standard
     private let layoutModeKey = "readingLayoutMode"
     private let fontSizeKey = "readingFontSize"
     private let lineSpacingKey = "readingLineSpacing"
     private let paddingKey = "readingPadding"
     private let themeKey = "readingTheme"
+    private let showReadingHUDKey = "readingShowHUD"
 
     private init() {
         layoutMode = ReadingLayoutMode(rawValue: defaults.string(forKey: layoutModeKey) ?? "") ?? .verticalPaged
@@ -136,6 +141,7 @@ final class ReadingSettings: @unchecked Sendable {
         lineSpacing = LineSpacingLevel(rawValue: defaults.integer(forKey: lineSpacingKey)) ?? .normal
         padding = PaddingLevel(rawValue: defaults.integer(forKey: paddingKey)) ?? .normal
         theme = ReadingTheme(rawValue: defaults.string(forKey: themeKey) ?? "") ?? .light
+        showReadingHUD = defaults.object(forKey: showReadingHUDKey) as? Bool ?? true
     }
 
     private func save() {
@@ -144,5 +150,6 @@ final class ReadingSettings: @unchecked Sendable {
         defaults.set(lineSpacing.rawValue, forKey: lineSpacingKey)
         defaults.set(padding.rawValue, forKey: paddingKey)
         defaults.set(theme.rawValue, forKey: themeKey)
+        defaults.set(showReadingHUD, forKey: showReadingHUDKey)
     }
 }

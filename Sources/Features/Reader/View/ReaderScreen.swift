@@ -8,6 +8,8 @@ struct ReaderScreen: View {
     @State private var showSettings = false
     @State private var currentPage = 1
     @State private var totalPages = 1
+    @State private var scrollOffset: Double = 0
+    @State private var contentHeight: Double = 0
     @Environment(\.modelContext) private var modelContext
 
     init(book: Book) {
@@ -44,43 +46,60 @@ struct ReaderScreen: View {
                         }
                         .background(settings.theme.backgroundColor)
 
-                        Text("\(currentPage) / \(totalPages)")
-                            .font(.caption.monospacedDigit())
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .padding()
+                        if settings.showReadingHUD {
+                            readingHUD
+                        }
                     }
                 } else {
-                    ScrollViewReader { _ in
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                Color.clear
-                                    .frame(height: 0)
-                                    .id("top")
+                    ZStack(alignment: .bottomTrailing) {
+                        ScrollViewReader { _ in
+                            ScrollView {
+                                VStack(spacing: 0) {
+                                    Color.clear
+                                        .frame(height: 0)
+                                        .id("top")
 
-                                Text(content)
-                                    .font(settings.fontSize.font)
-                                    .lineSpacing(settings.lineSpacing.value)
-                                    .foregroundStyle(settings.theme.textColor)
-                                    .textSelection(.enabled)
-                                    .padding(settings.padding.value)
-                            }
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear.preference(
-                                        key: ScrollOffsetKey.self,
-                                        value: -geo.frame(in: .named("scroll")).origin.y
-                                    )
+                                    Text(content)
+                                        .font(settings.fontSize.font)
+                                        .lineSpacing(settings.lineSpacing.value)
+                                        .foregroundStyle(settings.theme.textColor)
+                                        .textSelection(.enabled)
+                                        .padding(settings.padding.value)
                                 }
-                            )
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear.preference(
+                                            key: ScrollOffsetKey.self,
+                                            value: -geo.frame(in: .named("scroll")).origin.y
+                                        )
+                                    }
+                                )
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear.preference(
+                                            key: ContentHeightKey.self,
+                                            value: geo.size.height
+                                        )
+                                    }
+                                )
+                            }
+                            .coordinateSpace(name: "scroll")
+                            .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                                scrollOffset = offset
+                                viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                                updateHorizontalPages()
+                            }
+                            .onPreferenceChange(ContentHeightKey.self) { height in
+                                contentHeight = height
+                                updateHorizontalPages()
+                            }
                         }
-                        .coordinateSpace(name: "scroll")
-                        .onPreferenceChange(ScrollOffsetKey.self) { offset in
-                            viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                        .background(settings.theme.backgroundColor)
+
+                        if settings.showReadingHUD {
+                            readingHUD
                         }
                     }
-                    .background(settings.theme.backgroundColor)
                 }
             } else {
                 ContentUnavailableView(
@@ -110,9 +129,42 @@ struct ReaderScreen: View {
             await viewModel.loadContent()
         }
     }
+
+    private func updateHorizontalPages() {
+        guard contentHeight > 0 else { return }
+        let viewportHeight = UIScreen.main.bounds.height
+        let estimatedTotal = max(Int(ceil(contentHeight / viewportHeight)), 1)
+        let estimatedCurrent = min(max(Int(ceil(scrollOffset / viewportHeight)) + 1, 1), estimatedTotal)
+        totalPages = estimatedTotal
+        currentPage = estimatedCurrent
+    }
+
+    private var readingHUD: some View {
+        let remaining = max(totalPages - currentPage, 0)
+        let timeText = ReadingTimeEstimator.formattedRemainingTime(
+            currentPage: currentPage,
+            totalPages: totalPages
+        )
+        return VStack(alignment: .trailing, spacing: 2) {
+            Text("残り\(remaining)ページ")
+            Text(timeText)
+        }
+        .font(.caption.monospacedDigit())
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .padding()
+    }
 }
 
 private struct ScrollOffsetKey: PreferenceKey {
+    static let defaultValue: Double = 0
+    static func reduce(value: inout Double, nextValue: () -> Double) {
+        value = nextValue()
+    }
+}
+
+private struct ContentHeightKey: PreferenceKey {
     static let defaultValue: Double = 0
     static func reduce(value: inout Double, nextValue: () -> Double) {
         value = nextValue()

@@ -41,6 +41,8 @@ struct ReadingSettingsSheet: View {
                                 }
                             }
                         }
+                        .accessibilityLabel(family.label)
+                        .accessibilityAddTraits(settings.fontFamily == family ? .isSelected : [])
                     }
                 }
 

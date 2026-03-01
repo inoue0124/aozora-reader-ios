@@ -16,9 +16,7 @@ enum FontSizeLevel: Int, CaseIterable, Sendable, Codable {
         }
     }
 
-    var font: Font {
-        .system(size: CGFloat(rawValue))
-    }
+
 }
 
 enum LineSpacingLevel: Int, CaseIterable, Sendable, Codable {
@@ -79,8 +77,8 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
         case .light: .white
         case .dark: Color(red: 0.1, green: 0.1, blue: 0.1)
         case .sepia: Color(red: 0.96, green: 0.93, blue: 0.86)
-        case .matcha: Color(red: 0.91, green: 0.94, blue: 0.89)
-        case .yozakura: Color(red: 0.16, green: 0.11, blue: 0.21)
+        case .matcha: Color(red: 232 / 255, green: 240 / 255, blue: 228 / 255)
+        case .yozakura: Color(red: 42 / 255, green: 27 / 255, blue: 53 / 255)
         }
     }
 
@@ -89,8 +87,8 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
         case .light: .black
         case .dark: .white
         case .sepia: Color(red: 0.3, green: 0.2, blue: 0.1)
-        case .matcha: Color(red: 0.18, green: 0.23, blue: 0.18)
-        case .yozakura: Color(red: 0.91, green: 0.84, blue: 0.94)
+        case .matcha: Color(red: 45 / 255, green: 58 / 255, blue: 45 / 255)
+        case .yozakura: Color(red: 232 / 255, green: 213 / 255, blue: 240 / 255)
         }
     }
 }

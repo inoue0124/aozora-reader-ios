@@ -266,6 +266,8 @@ private struct ContinueReadingCard: View {
                 .lineLimit(1)
                 .frame(width: 110, alignment: .leading)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(bookmark.title)、\(bookmark.authorName)、続きから読む")
     }
 }
 
@@ -386,6 +388,8 @@ private struct BookShelfCard: View {
                 .lineLimit(1)
                 .frame(width: 110, alignment: .leading)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(book.title)、\(book.authorName)")
     }
 }
 

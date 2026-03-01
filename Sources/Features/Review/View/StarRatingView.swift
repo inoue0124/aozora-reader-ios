@@ -12,5 +12,8 @@ struct StarRatingView: View {
                     .foregroundStyle(star <= rating ? AppColors.rating : AppColors.ratingInactive)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("評価")
+        .accessibilityValue("5点中\(rating)点")
     }
 }

@@ -4,6 +4,7 @@ import WebKit
 struct VerticalPagedReaderView: UIViewRepresentable {
     let content: AttributedString
     let settings: ReadingSettings
+    let savedPageRatio: Double
     let onScroll: (Double) -> Void
     let onPageChanged: (_ current: Int, _ total: Int) -> Void
 
@@ -26,6 +27,7 @@ struct VerticalPagedReaderView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.onScroll = onScroll
         context.coordinator.onPageChanged = onPageChanged
+        context.coordinator.isLoadingHTML = true
         webView.loadHTMLString(buildHTML(), baseURL: nil)
     }
 
@@ -60,7 +62,7 @@ struct VerticalPagedReaderView: UIViewRepresentable {
           overflow-x: auto; overflow-y: hidden;
           scroll-snap-type: x mandatory; column-fill: auto;
           column-width: calc(100vw - \(pad * 2)px); column-gap: 0;
-          word-break: keep-all;
+          line-break: strict; overflow-wrap: break-word;
         }
         </style>
         </head>
@@ -70,26 +72,43 @@ struct VerticalPagedReaderView: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onScroll: onScroll, onPageChanged: onPageChanged)
+        Coordinator(
+            initialPageRatio: savedPageRatio,
+            onScroll: onScroll,
+            onPageChanged: onPageChanged
+        )
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
         var onScroll: (Double) -> Void
         var onPageChanged: (_ current: Int, _ total: Int) -> Void
         weak var webView: WKWebView?
+        var isLoadingHTML = false
+        private var currentPageRatio: Double
 
-        init(onScroll: @escaping (Double) -> Void, onPageChanged: @escaping (_ current: Int, _ total: Int) -> Void) {
+        init(
+            initialPageRatio: Double,
+            onScroll: @escaping (Double) -> Void,
+            onPageChanged: @escaping (_ current: Int, _ total: Int) -> Void
+        ) {
+            // Ignore legacy pixel-based bookmarks (values > 1.0)
+            self.currentPageRatio = initialPageRatio <= 1 ? initialPageRatio : 0
             self.onScroll = onScroll
             self.onPageChanged = onPageChanged
         }
 
         func scrollViewDidScroll(_ scrollView: UIScrollView) {
-            let offset = scrollView.contentOffset.x
-            onScroll(offset)
+            guard !isLoadingHTML else { return }
 
+            let offset = scrollView.contentOffset.x
             let pageWidth = max(scrollView.bounds.width, 1)
-            let totalPages = max(Int(ceil(scrollView.contentSize.width / pageWidth)), 1)
+            let contentWidth = scrollView.contentSize.width
+            let totalPages = max(Int(ceil(contentWidth / pageWidth)), 1)
             let currentPage = min(max(Int(round(offset / pageWidth)) + 1, 1), totalPages)
+
+            let ratio = totalPages > 1 ? Double(currentPage - 1) / Double(totalPages - 1) : 0
+            currentPageRatio = ratio
+            onScroll(ratio)
             onPageChanged(currentPage, totalPages)
         }
 
@@ -109,8 +128,22 @@ struct VerticalPagedReaderView: UIViewRepresentable {
                     let viewport = dict["viewport"] as? Double
                 else { return }
 
-                let total = max(Int(ceil(width / max(viewport, 1))), 1)
-                onPageChanged(1, total)
+                let pageWidth = max(viewport, 1)
+                let total = max(Int(ceil(width / pageWidth)), 1)
+
+                if currentPageRatio > 0 && total > 1 {
+                    let targetPage = Int(round(currentPageRatio * Double(total - 1)))
+                    let snappedOffset = Double(targetPage) * pageWidth
+                    webView.scrollView.setContentOffset(
+                        CGPoint(x: snappedOffset, y: 0), animated: false
+                    )
+                    let page = min(max(targetPage + 1, 1), total)
+                    onPageChanged(page, total)
+                } else {
+                    onPageChanged(1, total)
+                }
+
+                isLoadingHTML = false
             }
         }
     }

@@ -13,7 +13,6 @@ struct AuthorDetailScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 portraitSection
-                profileSection
                 biographySection
                 representativeWorksSection
                 timelineSection
@@ -70,24 +69,6 @@ struct AuthorDetailScreen: View {
                         .foregroundStyle(.tertiary)
                 }
             }
-        }
-    }
-
-    // MARK: - Profile
-
-    @ViewBuilder
-    private var profileSection: some View {
-        if !person.lastNameRomaji.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("ローマ字表記")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("\(person.lastNameRomaji) \(person.firstNameRomaji)")
-                    .font(.subheadline)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 

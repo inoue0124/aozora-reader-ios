@@ -92,7 +92,7 @@ struct VerticalPagedReaderView: UIViewRepresentable {
             onPageChanged: @escaping (_ current: Int, _ total: Int) -> Void
         ) {
             // Ignore legacy pixel-based bookmarks (values > 1.0)
-            self.currentPageRatio = initialPageRatio <= 1 ? initialPageRatio : 0
+            currentPageRatio = initialPageRatio <= 1 ? initialPageRatio : 0
             self.onScroll = onScroll
             self.onPageChanged = onPageChanged
         }
@@ -131,7 +131,7 @@ struct VerticalPagedReaderView: UIViewRepresentable {
                 let pageWidth = max(viewport, 1)
                 let total = max(Int(ceil(width / pageWidth)), 1)
 
-                if currentPageRatio > 0 && total > 1 {
+                if currentPageRatio > 0, total > 1 {
                     let targetPage = Int(round(currentPageRatio * Double(total - 1)))
                     let snappedOffset = Double(targetPage) * pageWidth
                     webView.scrollView.setContentOffset(

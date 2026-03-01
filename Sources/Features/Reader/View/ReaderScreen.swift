@@ -32,8 +32,12 @@ struct ReaderScreen: View {
             } else if let content = viewModel.content {
                 if settings.layoutMode == .verticalPaged {
                     ZStack(alignment: .bottomTrailing) {
-                        VerticalPagedReaderView(content: content, settings: settings) { offset in
-                            viewModel.saveBookmark(scrollOffset: offset, context: modelContext)
+                        VerticalPagedReaderView(
+                            content: content,
+                            settings: settings,
+                            savedPageRatio: viewModel.savedScrollOffset
+                        ) { ratio in
+                            viewModel.saveBookmark(scrollOffset: ratio, context: modelContext)
                         } onPageChanged: { current, total in
                             currentPage = current
                             totalPages = total

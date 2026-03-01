@@ -18,7 +18,8 @@ struct ReviewSheet: View {
                             } label: {
                                 Image(systemName: star <= viewModel.rating ? "star.fill" : "star")
                                     .font(.title2)
-                                    .foregroundStyle(star <= viewModel.rating ? AppColors.rating : AppColors.ratingInactive)
+                                    .foregroundStyle(star <= viewModel.rating ? AppColors.rating : AppColors
+                                        .ratingInactive)
                             }
                             .buttonStyle(.plain)
                         }

@@ -16,7 +16,6 @@ enum FontSizeLevel: Int, CaseIterable, Sendable, Codable {
         }
     }
 
-
 }
 
 enum LineSpacingLevel: Int, CaseIterable, Sendable, Codable {

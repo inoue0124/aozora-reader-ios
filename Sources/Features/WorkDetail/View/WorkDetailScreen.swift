@@ -181,6 +181,18 @@ struct WorkDetailScreen: View {
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("まだレビューはありません")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text("最初のレビューを書いてみよう")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             }
         }
     }

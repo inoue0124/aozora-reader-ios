@@ -112,7 +112,6 @@ struct HomeScreen: View {
 
     // MARK: - Work Type Shelves
 
-    @ViewBuilder
     private var workTypeShelvesSection: some View {
         ForEach(viewModel.workTypeShelves) { shelf in
             ShelfSection(title: shelf.workType.displayName, systemImage: shelf.workType.iconName) {

@@ -122,9 +122,7 @@ struct AuthorDetailScreen: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
         .accessibilityElement(children: .combine)
         .accessibilityLabel("来歴セクション")
     }
@@ -174,9 +172,7 @@ struct AuthorDetailScreen: View {
                 }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     // MARK: - Timeline
@@ -221,9 +217,7 @@ struct AuthorDetailScreen: View {
                 }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     // MARK: - Works List
@@ -291,9 +285,7 @@ struct AuthorDetailScreen: View {
                 }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     // MARK: - Sources
@@ -321,9 +313,7 @@ struct AuthorDetailScreen: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
         .accessibilityElement(children: .combine)
         .accessibilityLabel("出典情報")
     }

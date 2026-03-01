@@ -76,7 +76,7 @@ struct HomeScreen: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .padding(.horizontal)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
@@ -315,7 +315,7 @@ private struct RecommendedAuthorCard: View {
         .frame(width: 110)
         .padding(.vertical, 12)
         .padding(.horizontal, 6)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
     }
 
@@ -360,7 +360,7 @@ private struct RecentReviewCard: View {
         }
         .frame(width: 160, alignment: .leading)
         .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
     }
 }

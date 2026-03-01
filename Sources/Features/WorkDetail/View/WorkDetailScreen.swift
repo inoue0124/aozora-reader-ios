@@ -107,8 +107,18 @@ struct WorkDetailScreen: View {
                 .font(.headline)
 
             if viewModel.isSummaryLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, alignment: .center)
+                VStack(alignment: .leading, spacing: 6) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(.quaternary)
+                        .frame(height: 14)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(.quaternary)
+                        .frame(height: 14)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(.quaternary)
+                        .frame(width: 180, height: 14)
+                }
+                .shimmer()
             } else if let summary = viewModel.summary {
                 Text(summary)
                     .font(.subheadline)

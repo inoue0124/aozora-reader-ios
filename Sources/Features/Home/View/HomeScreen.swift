@@ -34,12 +34,39 @@ struct HomeScreen: View {
     // MARK: - Loading
 
     private var loadingSection: some View {
-        HStack {
-            Spacer()
-            ProgressView("読み込み中…")
-            Spacer()
+        VStack(alignment: .leading, spacing: 28) {
+            skeletonShelf
+            skeletonShelf
         }
-        .padding(.top, 40)
+        .shimmer()
+    }
+
+    private var skeletonShelf: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(.quaternary)
+                .frame(width: 140, height: 20)
+                .padding(.horizontal)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(0 ..< 4, id: \.self) { _ in
+                        VStack(alignment: .leading, spacing: 6) {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.quaternary)
+                                .frame(width: 110, height: 155)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(.quaternary)
+                                .frame(width: 90, height: 14)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(.quaternary)
+                                .frame(width: 60, height: 12)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
     }
 
     // MARK: - Continue Reading

@@ -13,12 +13,11 @@ struct SearchScreen: View {
                 )
                 .listRowSeparator(.hidden)
             } else if viewModel.isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView("検索中…")
-                    Spacer()
+                ForEach(0 ..< 5, id: \.self) { _ in
+                    searchSkeletonRow
                 }
                 .listRowSeparator(.hidden)
+                .shimmer()
             } else if let error = viewModel.errorMessage {
                 ContentUnavailableView(
                     "エラー",
@@ -70,5 +69,23 @@ struct SearchScreen: View {
         .navigationDestination(for: Book.self) { book in
             WorkDetailScreen(book: book)
         }
+    }
+
+    private var searchSkeletonRow: some View {
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(.quaternary)
+                .frame(width: 50, height: 70)
+            VStack(alignment: .leading, spacing: 6) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(.quaternary)
+                    .frame(width: 160, height: 16)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(.quaternary)
+                    .frame(width: 100, height: 12)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 4)
     }
 }

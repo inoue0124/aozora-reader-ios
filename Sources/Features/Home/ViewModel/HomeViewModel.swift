@@ -8,6 +8,7 @@ final class HomeViewModel {
     var recommendedAuthors: [RecommendedAuthor] = []
     var recentReviews: [BookReview] = []
     var workTypeShelves: [WorkTypeShelf] = []
+    var authorPortraitURLs: [Int: URL] = [:]
     var isLoading = false
     var isFallbackAuthors = false
 
@@ -24,6 +25,9 @@ final class HomeViewModel {
 
         isFallbackAuthors = recommendedAuthors.first?.isFallback ?? true
         isLoading = false
+
+        // Load author portraits in background after content is shown
+        await loadAuthorPortraits()
     }
 
     // MARK: - Private
@@ -57,6 +61,22 @@ final class HomeViewModel {
             }
         }
         return shelves
+    }
+
+    private func loadAuthorPortraits() async {
+        await withTaskGroup(of: (Int, URL?).self) { group in
+            for author in recommendedAuthors {
+                group.addTask {
+                    let url = await AuthorPortraitService.shared.portraitURL(for: author.person)
+                    return (author.personId, url)
+                }
+            }
+            for await (personId, url) in group {
+                if let url {
+                    authorPortraitURLs[personId] = url
+                }
+            }
+        }
     }
 }
 

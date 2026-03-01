@@ -201,6 +201,109 @@ struct RecommendationServiceTests {
         }
     }
 
+    // MARK: - workTypeWeights
+
+    @Test("ジャンル重み: 履歴の viewCount から WorkType ごとに重みが算出される")
+    func workTypeWeightsFromHistory() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        // 短編(913短編) x2件, 長編(913) x1件 → 3件以上で計算対象
+        context.insert(ReadingHistory(bookId: 1, authorPersonId: 1, title: "A", authorName: "著者", classification: "短編"))
+        context.insert(ReadingHistory(bookId: 2, authorPersonId: 2, title: "B", authorName: "著者", classification: "短編"))
+        context.insert(ReadingHistory(
+            bookId: 3,
+            authorPersonId: 3,
+            title: "C",
+            authorName: "著者",
+            classification: "913"
+        ))
+        try context.save()
+
+        let weights = service.workTypeWeights(context: context)
+
+        #expect(weights[.shortStory] == 2.0) // viewCount=1 x2
+        #expect(weights[.novel] == 1.0) // viewCount=1 x1
+        #expect(weights[.essay] == nil)
+    }
+
+    @Test("ジャンル重み: レビューの rating も加算される")
+    func workTypeWeightsIncludesReviews() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        // 履歴3件で閾値超え
+        let h1 = ReadingHistory(bookId: 1, authorPersonId: 1, title: "A", authorName: "著者", classification: "短編")
+        let h2 = ReadingHistory(bookId: 2, authorPersonId: 2, title: "B", authorName: "著者", classification: "913")
+        let h3 = ReadingHistory(bookId: 3, authorPersonId: 3, title: "C", authorName: "著者", classification: "913")
+        context.insert(h1)
+        context.insert(h2)
+        context.insert(h3)
+
+        // bookId=1 にレビュー(rating=5) → 短編に +10.0
+        context.insert(BookReview(bookId: 1, title: "A", authorName: "著者", rating: 5, comment: "良い"))
+        try context.save()
+
+        let weights = service.workTypeWeights(context: context)
+
+        // 短編: history(1) + review(5*2.0) = 11.0
+        #expect(weights[.shortStory] == 11.0)
+        // 長編: history(1) + history(1) = 2.0
+        #expect(weights[.novel] == 2.0)
+    }
+
+    @Test("ジャンル重み: コールドスタート時は空辞書")
+    func workTypeWeightsColdStart() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        // 2件のみ（< 3）
+        context.insert(ReadingHistory(bookId: 1, authorPersonId: 1, title: "A", authorName: "著者", classification: "短編"))
+        context.insert(ReadingHistory(
+            bookId: 2,
+            authorPersonId: 2,
+            title: "B",
+            authorName: "著者",
+            classification: "913"
+        ))
+        try context.save()
+
+        let weights = service.workTypeWeights(context: context)
+        #expect(weights.isEmpty)
+    }
+
+    @Test("ジャンル重み: other 分類は無視される")
+    func workTypeWeightsIgnoresOther() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        context.insert(ReadingHistory(
+            bookId: 1,
+            authorPersonId: 1,
+            title: "A",
+            authorName: "著者",
+            classification: "000"
+        ))
+        context.insert(ReadingHistory(
+            bookId: 2,
+            authorPersonId: 2,
+            title: "B",
+            authorName: "著者",
+            classification: "000"
+        ))
+        context.insert(ReadingHistory(
+            bookId: 3,
+            authorPersonId: 3,
+            title: "C",
+            authorName: "著者",
+            classification: "000"
+        ))
+        try context.save()
+
+        let weights = service.workTypeWeights(context: context)
+        #expect(weights.isEmpty)
+    }
+
     // MARK: - Helpers
 
     private func makeContainer() throws -> ModelContainer {

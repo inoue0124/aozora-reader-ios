@@ -2,6 +2,10 @@ import Foundation
 import SwiftUI
 
 struct AozoraTextParser: Sendable {
+    private static let rubyRegex = try? NSRegularExpression(
+        pattern: "<ruby><rb>([^<]*)</rb>[^<]*<rt>([^<]*)</rt>[^<]*</ruby>"
+    )
+
     func parse(html: String) -> AttributedString {
         let cleaned = extractBody(from: html)
         let plainText = stripHTMLTags(cleaned)
@@ -38,8 +42,7 @@ struct AozoraTextParser: Sendable {
         result = result.replacingOccurrences(of: "</p>", with: "\n\n", options: .caseInsensitive)
         result = result.replacingOccurrences(of: "</div>", with: "\n", options: .caseInsensitive)
 
-        let rubyPattern = "<ruby><rb>([^<]*)</rb>[^<]*<rt>([^<]*)</rt>[^<]*</ruby>"
-        if let regex = try? NSRegularExpression(pattern: rubyPattern, options: []) {
+        if let regex = Self.rubyRegex {
             let nsString = result as NSString
             let matches = regex.matches(in: result, range: NSRange(location: 0, length: nsString.length))
             for match in matches.reversed() {

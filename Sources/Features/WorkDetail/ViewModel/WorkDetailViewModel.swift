@@ -34,7 +34,7 @@ final class WorkDetailViewModel {
         let descriptor = FetchDescriptor<Bookmark>(
             predicate: #Predicate { $0.bookId == bookId }
         )
-        hasReadingProgress = (try? context.fetch(descriptor).first) != nil
+        hasReadingProgress = (try? context.fetchCount(descriptor)) ?? 0 > 0
     }
 
     func loadSummary(context: ModelContext) async {

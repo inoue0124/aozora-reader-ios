@@ -90,6 +90,26 @@ enum ReadingTheme: String, CaseIterable, Sendable, Codable {
         case .yozakura: Color(red: 232 / 255, green: 213 / 255, blue: 240 / 255)
         }
     }
+
+    var hexBackground: String {
+        switch self {
+        case .light: "#FFFFFF"
+        case .dark: "#1A1A1A"
+        case .sepia: "#F4EEDF"
+        case .matcha: "#E8F0E4"
+        case .yozakura: "#2A1B35"
+        }
+    }
+
+    var hexText: String {
+        switch self {
+        case .light: "#111111"
+        case .dark: "#F7F7F7"
+        case .sepia: "#4A3929"
+        case .matcha: "#2D3A2D"
+        case .yozakura: "#E8D5F0"
+        }
+    }
 }
 
 enum FontFamily: String, CaseIterable, Sendable, Codable {
@@ -139,6 +159,7 @@ enum ReadingLayoutMode: String, CaseIterable, Sendable, Codable {
 }
 
 @Observable
+@MainActor
 final class ReadingSettings: @unchecked Sendable {
     static let shared = ReadingSettings()
 

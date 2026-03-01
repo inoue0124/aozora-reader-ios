@@ -14,6 +14,25 @@ struct RecommendedAuthor: Sendable {
 final class RecommendationService {
     static let shared = RecommendationService()
 
+    // MARK: - Scoring Constants
+
+    /// コールドスタート判定: 履歴 + レビュー合計がこの値未満ならフォールバック
+    private static let coldStartThreshold = 3
+    /// viewCount の上限キャップ（スコア飽和防止）
+    private static let viewCountCap = 5
+    /// 最も閲覧された分類と一致する場合のボーナススコア
+    private static let classificationBonus = 2.0
+    /// レビュー評価の重み乗数
+    private static let reviewWeight = 3.0
+    /// 全作品閲覧済み著者のペナルティ係数
+    private static let fullyViewedPenalty = 0.3
+    /// リーセンシー減衰の期間（日数）
+    private static let recencyDecayDays = 90.0
+    /// リーセンシー減衰の下限値
+    private static let recencyDecayFloor = 0.5
+    /// workTypeWeights でのレビュー評価の重み乗数
+    private static let workTypeReviewWeight = 2.0
+
     private init() {}
 
     /// おすすめ著者を算出する（レビュー・閲覧履歴ベース）
@@ -24,8 +43,7 @@ final class RecommendationService {
         let histories = fetchAllHistory(context: context)
         let reviews = fetchAllReviews(context: context)
 
-        // コールドスタート: 履歴 + レビュー合計 3 件未満 → フォールバック
-        if histories.count + reviews.count < 3 {
+        if histories.count + reviews.count < Self.coldStartThreshold {
             return await fallbackAuthors(limit: limit)
         }
 
@@ -56,8 +74,8 @@ final class RecommendationService {
     ) {
         for history in histories {
             let pid = history.authorPersonId
-            let viewScore = Double(min(history.viewCount, 5))
-            let bonus: Double = (history.classification == topClassification) ? 2.0 : 0
+            let viewScore = Double(min(history.viewCount, Self.viewCountCap))
+            let bonus: Double = (history.classification == topClassification) ? Self.classificationBonus : 0
             scores[pid, default: 0] += viewScore + bonus
             updateLatest(&latest, personId: pid, date: history.lastViewedAt)
         }
@@ -70,7 +88,7 @@ final class RecommendationService {
     ) async {
         for review in reviews {
             guard let book = try? await CatalogService.shared.book(id: review.bookId) else { continue }
-            scores[book.personId, default: 0] += Double(review.rating) * 3.0
+            scores[book.personId, default: 0] += Double(review.rating) * Self.reviewWeight
             updateLatest(&latest, personId: book.personId, date: review.updatedAt)
         }
     }
@@ -83,7 +101,7 @@ final class RecommendationService {
             let allWorks = await (try? CatalogService.shared.booksByPerson(personId: personId)) ?? []
             let viewedCount = histories.count { $0.authorPersonId == personId }
             if !allWorks.isEmpty, viewedCount >= allWorks.count {
-                scores[personId]! *= 0.3
+                scores[personId]! *= Self.fullyViewedPenalty
             }
         }
     }
@@ -92,7 +110,7 @@ final class RecommendationService {
         let now = Date.now
         for (personId, lastDate) in latestInteraction {
             let days = now.timeIntervalSince(lastDate) / 86400
-            let decay = max(0.5, 1.0 - days / 90.0)
+            let decay = max(Self.recencyDecayFloor, 1.0 - days / Self.recencyDecayDays)
             scores[personId]! *= decay
         }
     }
@@ -113,7 +131,7 @@ final class RecommendationService {
         let histories = fetchAllHistory(context: context)
         let reviews = fetchAllReviews(context: context)
 
-        if histories.count + reviews.count < 3 {
+        if histories.count + reviews.count < Self.coldStartThreshold {
             return [:]
         }
 
@@ -126,7 +144,7 @@ final class RecommendationService {
             let wt = WorkType.from(classification: history.classification)
             classificationByBookId[history.bookId] = history.classification
             guard wt != .other else { continue }
-            let score = Double(min(history.viewCount, 5))
+            let score = Double(min(history.viewCount, Self.viewCountCap))
             weights[wt, default: 0] += score
         }
 
@@ -134,7 +152,7 @@ final class RecommendationService {
             guard let classification = classificationByBookId[review.bookId] else { continue }
             let wt = WorkType.from(classification: classification)
             guard wt != .other else { continue }
-            weights[wt, default: 0] += Double(review.rating) * 2.0
+            weights[wt, default: 0] += Double(review.rating) * Self.workTypeReviewWeight
         }
 
         return weights

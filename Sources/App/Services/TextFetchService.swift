@@ -93,22 +93,37 @@ actor TextFetchService {
     }
 
     private func detectEncoding(from data: Data, response: HTTPURLResponse) -> String.Encoding {
-        if
-            let contentType = response.value(forHTTPHeaderField: "Content-Type"),
-            contentType.contains("Shift_JIS") || contentType.contains("shift_jis")
-        {
-            return .shiftJIS
+        // 1. Content-Type ヘッダーで判定（最も信頼性が高い）
+        if let contentType = response.value(forHTTPHeaderField: "Content-Type") {
+            let lowered = contentType.lowercased()
+            if lowered.contains("shift_jis") || lowered.contains("shift-jis") {
+                return .shiftJIS
+            }
+            if lowered.contains("utf-8") {
+                return .utf8
+            }
+            if lowered.contains("euc-jp") {
+                return .japaneseEUC
+            }
         }
 
-        let head = String(data: data.prefix(1024), encoding: .utf8) ?? ""
-        if head.contains("Shift_JIS") || head.contains("shift_jis") {
-            return .shiftJIS
+        // 2. HTML meta タグから判定（先頭1024バイトのみ検査）
+        if let head = String(data: data.prefix(1024), encoding: .ascii) {
+            let lowered = head.lowercased()
+            if lowered.contains("shift_jis") || lowered.contains("shift-jis") {
+                return .shiftJIS
+            }
+            if lowered.contains("euc-jp") {
+                return .japaneseEUC
+            }
         }
 
+        // 3. UTF-8 として有効か検証
         if String(data: data, encoding: .utf8) != nil {
             return .utf8
         }
 
+        // 4. 青空文庫はデフォルトで Shift_JIS
         return .shiftJIS
     }
 }

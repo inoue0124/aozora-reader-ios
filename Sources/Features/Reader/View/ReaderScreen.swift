@@ -62,7 +62,10 @@ struct ReaderScreen: View {
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if totalPages > 1 {
-                        Button { showPageJump = true } label: {
+                        Button {
+                            pageJumpText = "\(currentPage)"
+                            showPageJump = true
+                        } label: {
                             Image(systemName: "arrow.right.doc.on.clipboard")
                         }
                     }

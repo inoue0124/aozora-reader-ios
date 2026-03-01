@@ -25,6 +25,43 @@ struct SummaryQualityGuard: Sendable {
         "だった[。、）)]", "ている[。、）)]", "られる[。、）)]",
     ]
 
+    // Pre-compiled regexes for performance
+    private let compiledNGPatterns: [NSRegularExpression]
+    private let compiledDesumasuPatterns: [NSRegularExpression]
+    private let compiledDearuPatterns: [NSRegularExpression]
+
+    private let convertDesumasuRules: [(NSRegularExpression, String)]
+    private let convertDearuRules: [(NSRegularExpression, String)]
+
+    init() {
+        compiledNGPatterns = Self.ngPatterns.compactMap { try? NSRegularExpression(pattern: $0) }
+        compiledDesumasuPatterns = Self.desumasuPatterns.compactMap { try? NSRegularExpression(pattern: $0) }
+        compiledDearuPatterns = Self.dearuPatterns.compactMap { try? NSRegularExpression(pattern: $0) }
+
+        let desumasuReplacements: [(String, String)] = [
+            ("である(。)", "です$1"),
+            ("であった(。)", "でした$1"),
+            ("ではない", "ではありません"),
+            ("であろう", "でしょう"),
+        ]
+        convertDesumasuRules = desumasuReplacements.compactMap { pattern, replacement in
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+            return (regex, replacement)
+        }
+
+        let dearuReplacements: [(String, String)] = [
+            ("です(。)", "である$1"),
+            ("でした(。)", "であった$1"),
+            ("ではありません", "ではない"),
+            ("でしょう", "であろう"),
+            ("ました(。)", "た$1"),
+        ]
+        convertDearuRules = dearuReplacements.compactMap { pattern, replacement in
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+            return (regex, replacement)
+        }
+    }
+
     func validate(_ text: String) -> Result {
         let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { return .rejected }
@@ -39,13 +76,9 @@ struct SummaryQualityGuard: Sendable {
     }
 
     private func containsNGPattern(_ text: String) -> Bool {
-        for pattern in Self.ngPatterns {
-            if
-                let regex = try? NSRegularExpression(pattern: pattern),
-                regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) != nil
-            {
-                return true
-            }
+        let range = NSRange(text.startIndex..., in: text)
+        for regex in compiledNGPatterns where regex.firstMatch(in: text, range: range) != nil {
+            return true
         }
         return false
     }
@@ -72,53 +105,33 @@ struct SummaryQualityGuard: Sendable {
     }
 
     private func unifyStyle(_ text: String) -> String {
-        let desumasuCount = countMatches(text, patterns: Self.desumasuPatterns)
-        let dearuCount = countMatches(text, patterns: Self.dearuPatterns)
+        let range = NSRange(text.startIndex..., in: text)
+        let desumasuCount = countMatches(text, range: range, patterns: compiledDesumasuPatterns)
+        let dearuCount = countMatches(text, range: range, patterns: compiledDearuPatterns)
 
         guard desumasuCount > 0, dearuCount > 0 else { return text }
 
         if desumasuCount >= dearuCount {
-            return convertToDesumasu(text)
+            return applyReplacements(text, rules: convertDesumasuRules)
         } else {
-            return convertToDearu(text)
+            return applyReplacements(text, rules: convertDearuRules)
         }
     }
 
-    private func countMatches(_ text: String, patterns: [String]) -> Int {
+    private func countMatches(_ text: String, range: NSRange, patterns: [NSRegularExpression]) -> Int {
         var count = 0
-        for pattern in patterns {
-            if let regex = try? NSRegularExpression(pattern: pattern) {
-                count += regex.numberOfMatches(in: text, range: NSRange(text.startIndex..., in: text))
-            }
+        for regex in patterns {
+            count += regex.numberOfMatches(in: text, range: range)
         }
         return count
     }
 
-    private func convertToDesumasu(_ text: String) -> String {
+    private func applyReplacements(_ text: String, rules: [(NSRegularExpression, String)]) -> String {
         var result = text
-        result = replacePattern(result, pattern: "である(。)", with: "です$1")
-        result = replacePattern(result, pattern: "であった(。)", with: "でした$1")
-        result = replacePattern(result, pattern: "ではない", with: "ではありません")
-        result = replacePattern(result, pattern: "であろう", with: "でしょう")
+        for (regex, replacement) in rules {
+            let range = NSRange(result.startIndex..., in: result)
+            result = regex.stringByReplacingMatches(in: result, range: range, withTemplate: replacement)
+        }
         return result
-    }
-
-    private func convertToDearu(_ text: String) -> String {
-        var result = text
-        result = replacePattern(result, pattern: "です(。)", with: "である$1")
-        result = replacePattern(result, pattern: "でした(。)", with: "であった$1")
-        result = replacePattern(result, pattern: "ではありません", with: "ではない")
-        result = replacePattern(result, pattern: "でしょう", with: "であろう")
-        result = replacePattern(result, pattern: "ました(。)", with: "た$1")
-        return result
-    }
-
-    private func replacePattern(_ text: String, pattern: String, with replacement: String) -> String {
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
-        return regex.stringByReplacingMatches(
-            in: text,
-            range: NSRange(text.startIndex..., in: text),
-            withTemplate: replacement
-        )
     }
 }

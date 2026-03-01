@@ -51,6 +51,13 @@ struct WorkDetailScreen: View {
         .fullScreenCover(isPresented: $showReader) {
             ReaderScreen(book: book)
         }
+        .refreshable {
+            await viewModel.loadAuthor()
+            viewModel.checkReadingProgress(context: modelContext)
+            isFavorite = favoritesVM.isFavorite(bookId: book.id, context: modelContext)
+            loadReview()
+            await viewModel.loadSummary(context: modelContext)
+        }
         .task {
             await viewModel.loadAuthor()
             viewModel.checkReadingProgress(context: modelContext)

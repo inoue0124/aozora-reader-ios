@@ -37,6 +37,11 @@ struct SearchScreen: View {
             }
         }
         .listStyle(.plain)
+        .refreshable {
+            if viewModel.hasSearched, !viewModel.query.isEmpty {
+                await viewModel.search()
+            }
+        }
         .animation(.easeOut(duration: 0.25), value: viewModel.results.count)
         .searchable(
             text: $viewModel.query,

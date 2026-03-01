@@ -30,6 +30,9 @@ struct HomeScreen: View {
         .navigationDestination(for: Person.self) { person in
             AuthorDetailScreen(person: person)
         }
+        .refreshable {
+            await viewModel.load(context: modelContext)
+        }
         .task {
             await viewModel.load(context: modelContext)
         }

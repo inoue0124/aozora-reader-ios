@@ -7,7 +7,7 @@ struct HomeScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
+            LazyVStack(alignment: .leading, spacing: 32) {
                 if viewModel.isLoading {
                     loadingSection
                 } else {
@@ -229,9 +229,19 @@ private struct ShelfSection<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(title, systemImage: systemImage)
-                .font(.title3.weight(.bold))
-                .padding(.horizontal)
+            HStack(spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.subheadline)
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(AppColors.accent, in: RoundedRectangle(cornerRadius: 7))
+
+                Text(title)
+                    .font(.title3.weight(.bold))
+
+                Spacer()
+            }
+            .padding(.horizontal)
 
             content
         }
